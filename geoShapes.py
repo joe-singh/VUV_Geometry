@@ -46,7 +46,7 @@ class BoxVolume(GeoVolume):
         return OutputString
 
 
-class tubeVolume(GeoVolume):
+class TubeVolume(GeoVolume):
     def __init__(self,name,rMax,height,rMin=0):
         GeoVolume.__init__(self)
         self.name = name

@@ -1,0 +1,25 @@
+/glg4debug/glg4param omit_muon_processes  1.0
+/glg4debug/glg4param omit_hadronic_processes  1.0
+
+/rat/db/set DETECTOR geo_file "./VUV.geo"
+
+/run/initialize
+
+# This makes a picture of the full MiniCLEAN detector, including water
+# tank and veto PMTs
+/vis/open RayTracer
+/vis/rayTracer/lightDirection 1 1 1
+/vis/rayTracer/column 1800
+/vis/rayTracer/row 2000
+
+# This is degrees per 100 pixels
+/vis/rayTracer/span 4 deg
+/vis/rayTracer/target 0 0 0 mm	
+
+#/vis/rayTracer/eyePosition 125.0 450.0 0.0 mm # High overview
+#/vis/rayTracer/eyePosition 250.0 23.6087510924 0.0 mm # Looking down beam
+/vis/rayTracer/eyePosition 250.0 200.0 0.0 mm
+
+# For some reason 270 is upright?
+/vis/rayTracer/headAngle 270 deg
+/vis/rayTracer/trace VUV_test1.jpg

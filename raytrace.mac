@@ -18,7 +18,8 @@
 
 #/vis/rayTracer/eyePosition 125.0 450.0 0.0 mm # High overview
 #/vis/rayTracer/eyePosition 250.0 23.6087510924 0.0 mm # Looking down beam
-/vis/rayTracer/eyePosition 250.0 200.0 0.0 mm
+#/vis/rayTracer/eyePosition 1500.0 -2.0 0.0 mm # Top View
+/vis/rayTracer/eyePosition 0.0 0.0 -1500.0 mm # Side Vide
 
 # For some reason 270 is upright?
 /vis/rayTracer/headAngle 270 deg

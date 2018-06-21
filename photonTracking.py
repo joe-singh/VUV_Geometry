@@ -50,9 +50,9 @@ def track_photon(infile):
     fig = plt.figure()
     ax = Axes3D(fig)
 
-#    ax.set_xlim3d(-10, 10)
-#    ax.set_ylim3d(-10,10)
-#    ax.set_zlim3d(-10,10)
+  #  ax.set_xlim3d(-1, 1)
+  #  ax.set_ylim3d(-1,1)
+  #  ax.set_zlim3d(-1,1)
     # plot 10 random particles
     for i in range(2000):
 

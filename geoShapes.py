@@ -1,6 +1,6 @@
 """
 Geometry class for RAT. 
-Jyotirmai Singh 6/8/18
+Chris Benson 11/12/2015
 """
 
 import random

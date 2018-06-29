@@ -16,11 +16,10 @@ def track_photon(infile):
     for iEntry, anEntry in enumerate(file_iterator):
         if iEntry % 1000 == 0 and iEntry > 0:
             print(iEntry)
-
         tracking_dict[iEntry] = []
         tempMC = anEntry.GetMC()
         num_tracks = tempMC.GetMCTrackCount()
-#        print("Tracks: ", num_tracks)
+#        print("Tracks: %d" % num_tracks)
 
         photon_track = tempMC.GetMCTrack(0)
         photon_first_step = photon_track.GetMCTrackStep(0)
@@ -38,7 +37,7 @@ def track_photon(infile):
                 zPos = track_end_point.z()
                 tracking_dict[iEntry] += [(xPos, yPos, zPos)]
     
-    print(tracking_dict) 
+#    print(tracking_dict) 
 
     for particle in tracking_dict:
         coordinates = tracking_dict[particle]
@@ -49,8 +48,14 @@ def track_photon(infile):
 
     fig = plt.figure()
     ax = Axes3D(fig)
-
-  #  ax.set_xlim3d(-1, 1)
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    
+    ax.view_init(180, 0)
+    ax.set_xlim3d(-25*25.4, 25*25.4)
+    ax.set_ylim3d(-25*25.4, 25*25.4)
+    ax.set_zlim3d(-25*25.4, 25*25.4)
   #  ax.set_ylim3d(-1,1)
   #  ax.set_zlim3d(-1,1)
     # plot 10 random particles

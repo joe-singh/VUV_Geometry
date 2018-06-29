@@ -4,7 +4,6 @@
 /rat/db/set DETECTOR geo_file "./VUV.geo"
 
 /run/initialize
-
 # This makes a picture of the full MiniCLEAN detector, including water
 # tank and veto PMTs
 /vis/open RayTracer
@@ -16,11 +15,18 @@
 /vis/rayTracer/span 4 deg
 /vis/rayTracer/target 0 0 0 mm	
 
+#/generator/add combo pbomb:point  
+#/generator/vtx/set 1000 385
+#/generator/pos/set 0.0 0.0 0.0
+
 #/vis/rayTracer/eyePosition 125.0 450.0 0.0 mm # High overview
 #/vis/rayTracer/eyePosition 250.0 23.6087510924 0.0 mm # Looking down beam
 #/vis/rayTracer/eyePosition 1500.0 -2.0 0.0 mm # Top View
-/vis/rayTracer/eyePosition 0.0 0.0 -1500.0 mm # Side Vide
+/vis/rayTracer/eyePosition 0.0 0.0 -1500.0 mm # Side View
 
 # For some reason 270 is upright?
 /vis/rayTracer/headAngle 270 deg
 /vis/rayTracer/trace VUV_test1.jpg
+
+
+

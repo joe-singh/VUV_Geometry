@@ -12,12 +12,10 @@
 
 /tracking/storeTrajectory 1
 
-/generator/add combo gun2:point
-/generator/vtx/set opticalphoton 1.0  0.0  0.0 90.0 0.0000095369 0.0000095369
-/generator/pos/set 0.0 0.0 0.0 
+/generator/add combo gun2:regexfill
+/generator/vtx/set opticalphoton 0.0 1.0 0.0 0.0 0.0000035497 0.0000035497
+/generator/pos/set slitGenPlane #-101.6 -310.0 0.0 
+#/generator/pos/set -101.6 -310.0 0.0 
 
-#/generator/add combo pbomb:point  
-#/generator/vtx/set 1000 385
-#/generator/pos/set 0.0 0.0 0.0
+/run/beamOn 100000
 
-/run/beamOn 10000

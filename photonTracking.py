@@ -22,7 +22,6 @@ def track_photon(infile):
 #        print("Tracks: %d" % num_tracks)
 
         photon_track = tempMC.GetMCTrack(0)
-        photon_first_step = photon_track.GetMCTrackStep(0)
          
         for iTrack in range(num_tracks):
             tempTrack = tempMC.GetMCTrack(iTrack)

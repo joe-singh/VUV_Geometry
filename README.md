@@ -14,3 +14,5 @@ photonTracking.py reads this output file and does a simple 3d scatterplot of the
 
 geoShapes.py is the class made by Chris that contains all the shape information about Tubes and Boxes, as well as
 borders between shapes. OPTICS.ratdb is the file containing all the material information. 
+
+raytrace.mac is the file used to visualise (rat raytrace.mac)

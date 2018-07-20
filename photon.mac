@@ -13,7 +13,7 @@
 /tracking/storeTrajectory 1
 
 /generator/add combo gun2:regexfill
-/generator/vtx/set opticalphoton 0.0 1.0 0.0 0.0 0.0000035497 0.0000035497
+/generator/vtx/set opticalphoton 0.0 1.0 0.0 0.0 0.000006000 0.000006000  # 0.0000035497 * 0.828 0.0000035497 * 0.828
 /generator/pos/set slitGenPlane #-101.6 -310.0 0.0 
 #/generator/pos/set -101.6 -310.0 0.0 
 

@@ -1,5 +1,6 @@
 import geoShapes as GS
 import numpy as np 
+import sys
 
 masterString = ''
 file_name = './VUV.geo'
@@ -26,13 +27,16 @@ slit_height = 0.192
 # For samples, theta = 0.0 means TPB is facing the left side where the light comes 
 # in. Both rotations occur in the same direction though, there is just a 180 degree
 # offset
-PHOTODIODE_THETA = 0.0
-SAMPLE_HOUSING_ANGLE = 90.0
+SAMPLE_HOUSING_ANGLE = float(sys.argv[1])
+#PHOTODIODE_ANGLE_NORMAL = float(sys.argv[2]) 
+ 
 SAMPLE_NORMAL = 180.0 + SAMPLE_HOUSING_ANGLE
-
+# Measure angles relative to normal of tpb sample
+PHOTODIODE_THETA = float(sys.argv[2]) 
+ 
 PHOTODIODE_HEIGHT = 1.25
 NUM_SAMPLE_HOLES = 4
-HOLE_IN_FRONT_OF_LIGHT = 1
+HOLE_IN_FRONT_OF_LIGHT = 3
 assert 0 < HOLE_IN_FRONT_OF_LIGHT <= NUM_SAMPLE_HOLES
 
 def deg_to_rad(deg):
@@ -268,18 +272,6 @@ masterString = sample_holder.writeToString(masterString)
 # List to keep track of holes to move sample up or down. 
 holes = []
 
-"""
-hole = GS.TubeVolume('hole', sample_holder.width/4.0, sample_holder.depth, 0.0)
-hole.material = 'pmt_vacuum'
-hole.mother = 'sampleframe'
-hole.colorVect[3] = 0.9
-#hole.rotation = sample_holder.rotation
-#hole.center = sample_holder.center
-hole.center['x'] = light_hole.center['x'] - sample_holder.center['x'] 
-masterString = hole.writeToString(masterString)
-
-TPB_THICKNESS * 3.93701*10**(-5)
-"""
 for i in range(1, NUM_SAMPLE_HOLES + 1):
     hole = GS.TubeVolume('hole%d' % i, 0.5, (1 - 0 * TPB_THICKNESS * 3.93701*10**(-5)) * sample_holder.depth, 0.0)
     hole.material = 'pmt_vacuum'
@@ -299,12 +291,11 @@ for i in range(1, NUM_SAMPLE_HOLES + 1):
     tpb.rotation[0] = sample_holder.rotation[0] 
     y_tpb, z_tpb = trig_distances(hole.height/2.0 + tpb.height/2.0, 90 - tpb.rotation[0])
     tpb.center = {'x': hole.center['x'] + sample_holder.center['x'], 'y': hole.center['y'] + sample_holder.center['y'] - y_tpb, 'z': hole.center['z'] + sample_holder.center['z']- z_tpb}
-#    hole_tpb_border = GS.border('tpb' + hole.name + 'border', tpb.name, hole.name)
-#    tpb_cube_border = GS.border('tpb' + hole.name + 'cubeborder', tpb.name, cube.name)
-#    borders.append(hole_tpb_border) 
-#    borders.append(tpb_cube_border)
+    tpb_surface = GS.border('tpb_surface%d' % i, cube.name, tpb.name)
+    tpb_surface.mother = 'cube' 
+    tpb_surface.surface = 'tpb_surface_border' 
     masterString = tpb.writeToString(masterString) 
-
+    #masterString = tpb_surface.writeToString(masterString)
 #print(holes[HOLE_IN_FRONT_OF_LIGHT - 1].center['x'] - sample_holder.center['x']) 
 
 #"""

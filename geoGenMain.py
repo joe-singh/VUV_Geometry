@@ -36,11 +36,11 @@ PHOTODIODE_THETA = float(sys.argv[2])
  
 PHOTODIODE_HEIGHT = 1.25
 NUM_SAMPLE_HOLES = 4
-HOLE_IN_FRONT_OF_LIGHT = 3
+HOLE_IN_FRONT_OF_LIGHT = 2
 assert 0 < HOLE_IN_FRONT_OF_LIGHT <= NUM_SAMPLE_HOLES
 
 def deg_to_rad(deg):
-    return np.pi * (deg / 180)
+    return np.pi * (deg / 180.0)
 
 def trig_distances(r, theta):
     y = r * np.cos(deg_to_rad(theta))
@@ -133,7 +133,8 @@ light_hole = GS.TubeVolume('lighthole', LIGHT_HOLE_DIAMETER/2.0, 10, 0)
 light_hole.material = 'pmt_vacuum'
 light_hole.mother = 'world'
 #light_hole.colorVect[3] = 0.2
-light_hole.invisible = 1
+light_hole.invisible = 0
+light_hole.colorVect[3] = 0.1
 light_hole.rotation[0] = 90.0
 light_hole.center = {'x': LIGHT_HOLE_CENTRE_HEIGHT,'y': cube_negative_y - light_hole.height/2.0, 'z': 0}
 masterString = light_hole.writeToString(masterString)
@@ -141,13 +142,13 @@ masterString = light_hole.writeToString(masterString)
 #borders.append(light_cube_border)
 
 # Add rectangular prism to simulate slit
-slitGenPlane = GS.BoxVolume('slitGenPlane', slit_height, 0.05, slit_width)
-slitGenPlane.material = 'pmt_vacuum'
-slitGenPlane.mother = 'lighthole'
+#slitGenPlane = GS.BoxVolume('slitGenPlane', slit_height, 0.05, slit_width)
+#slitGenPlane.material = 'pmt_vacuum'
+#slitGenPlane.mother = 'lighthole'
 #slitGenPlane.colorVect[3] = 0.5
-slitGenPlane.invisible = 1
+#slitGenPlane.invisible = 1
 #slitGenPlane.center = {'x': light_hole.center['x'], 'y': light_hole.center['y'], 'z': 0.0}
-masterString = slitGenPlane.writeToString(masterString)
+#masterString = slitGenPlane.writeToString(masterString)
 
 # Add test volume to see if photons going through this as needed
 testDisk = GS.TubeVolume('testdisk', light_hole.rMax, 0.05, 0) 
@@ -157,7 +158,7 @@ testDisk.colorVect[3] = 1.0
 testDisk.rotation[0] = 90.0  
 testDisk.center = {'x': light_hole.center['x'], 'y': cube_negative_y - testDisk.height/2.0, 'z': light_hole.center['z']}
 assert testDisk.center['y'] + testDisk.height/2.0 == cube.center['y'] - cube.width/2.0 
-masterString = testDisk.writeToString(masterString) 
+#masterString = testDisk.writeToString(masterString) 
 
 # Add lever joining sample housing to photodiode 
 # Assert statement ensures that rod doesn't break cube boundaries
@@ -201,7 +202,7 @@ y_support_offset, z_support_offset = trig_distances(0.4 * PHOTODIODE_DISTANCE_FR
 photodiode_support.center = {'x': bottom_arm.center['x'] + bottom_arm.height/2.0 + photodiode_support.height/2.0, 'y': bottom_arm.center['y'] + y_support_offset, 'z': bottom_arm.center['z'] + z_support_offset} 
 photodiode_support.rotation[0] = -PHOTODIODE_THETA
 photodiode_support.rotation[1] = 90.0
-masterString = photodiode_support.writeToString(masterString)
+#masterString = photodiode_support.writeToString(masterString)
 
 support_arm_border = GS.border('supportarmborder', photodiode_support.name, bottom_arm.name)
 borders.append(support_arm_border)
@@ -222,7 +223,7 @@ assert photodiode.center['y'] - photodiode.height/2.0 > cube_negative_y
 apparatusHeight = cube_negative_x + plate.height + bottom_arm.height + photodiode_support.height + photodiode.rMax
 lightHeight = light_hole.center['x']
 assert apparatusHeight == photodiode.center['x'] and lightHeight == apparatusHeight
-masterString = photodiode.writeToString(masterString)
+#masterString = photodiode.writeToString(masterString)
 photodiode_support_border = GS.border('photodiodesupportborder', photodiode.name, photodiode_support.name) 
 borders.append(photodiode_support_border)
 photodiode_cube_border = GS.border('photodiodecubeborder', photodiode.name, cube.name) 
@@ -237,6 +238,75 @@ photodiodetest.center = {'x': photodiode.center['x'], 'y': photodiode.center['y'
 photodiodetest.rotation[0] = 90.0 - PHOTODIODE_THETA
 masterString = photodiodetest.writeToString(masterString)
 
+perf = GS.HoledBox('sampleholder', 6.25, 1.25, 0.33, NUM_SAMPLE_HOLES, 0.5, 0.1)
+perf.material = 'pmt_vacuum'
+perf.mother = 'cube'
+perf.colorVect[3] = 0.3
+#perf.invisible = 1
+perf.rotation[0] = 90.0 - SAMPLE_HOUSING_ANGLE
+hole_locations = perf.x
+perf.center = {'x': light_hole.center['x'], 'y': sample_housing.center['y'],  'z': sample_housing.center['z']} # offset was -1.375
+height_offset = perf.center['x'] + perf.x[HOLE_IN_FRONT_OF_LIGHT - 1] - light_hole.center['x']
+perf.center['x'] -= height_offset
+masterString = perf.writeToString(masterString)
+
+hole_locations = perf.x
+
+for i in range(1, len(perf.x) + 1):
+    height = float(perf.x[i-1])
+    hole = GS.TubeVolume('hole_%d' % i, 0.5, 0.33, 0.0)
+    hole.material = 'acrylic_suvt'
+    hole.mother = 'cube'
+    hole.colorVect[3] = 0.9
+    cube.invisible = 1
+    hole.rotation[0] = perf.rotation[0]
+    hole.center = {'x': perf.center['x'] + height, 'y': sample_housing.center['y'], 'z': sample_housing.center['z']} 
+    masterString = hole.writeToString(masterString)
+
+    tpb = GS.TubeVolume('tpb_%d' % i, hole.rMax, TPB_THICKNESS * 3.93701*10**(-5), 0.0)
+    tpb.material = 'tpb'
+    tpb.mother = 'cube'
+    tpb.colorVect[3] = 1.0
+    tpb.rotation[0] = perf.rotation[0]
+    y_tpb, z_tpb = trig_distances(hole.height/2.0 + tpb.height/2.0, 90 - tpb.rotation[0])
+    tpb.center['x'] = hole.center['x']
+    tpb.center['y'] = hole.center['y'] - y_tpb # hole.height/2.0 - tpb.height/2.0  #y_tpb
+    tpb.center['z'] = hole.center['z'] - z_tpb 
+    print("Tpb z: %f, tpb y: %f" % (z_tpb, y_tpb)) 
+    masterString = tpb.writeToString(masterString)
+
+    tpb_surface = GS.border('tpb_surface_%d' % i, cube.name, tpb.name)
+    tpb_surface.mother = 'cube'
+    tpb_surface.surface = 'tpb_surface_border'
+    masterString = tpb_surface.writeToString(masterString)
+
+    sample_test_hole = GS.TubeVolume("test%d" % i, hole.rMax, 0.05, 0.0)
+    sample_test_hole.material = 'pmt_vacuum'
+    sample_test_hole.mother = 'cube'
+    sample_test_hole.colorVect[3] = 1.0
+    sample_test_hole.rotation[0] = perf.rotation[0]
+    y_sample, z_sample = trig_distances(1e-6 + hole.height/2.0 + sample_test_hole.height/2.0, 90 - sample_test_hole.rotation[0])
+    print("sampledisk z: %f, sampledisk y: %f" % (z_sample, y_sample)) 
+    sample_test_hole.center['x'] = hole.center['x']
+    sample_test_hole.center['y'] = hole.center['y'] + y_sample # 1e-6 + hole.height/2.0 + sample_test_hole.height/2.0 # y_sample
+    sample_test_hole.center['z'] = hole.center['z'] + z_sample
+    masterString = sample_test_hole.writeToString(masterString)
+
+slitGenPlane = GS.BoxVolume('slitGenPlane', slit_height, slit_width, 0.05)
+slitGenPlane.material = 'pmt_vacuum'
+slitGenPlane.mother = 'lighthole'
+slitGenPlane.invisible = 0
+slitGenPlane.colorVect[3] = 1.0
+slitGenPlane.center['y'] = 0.0
+slitGenPlane.center['x'] = 0.0
+#slitGenPlane.center['x'] = perf.center['x'] + float(perf.x[2])
+#slitGenPlane.center['y'] = hole.center['y'] - 10
+#slitGenPlane.center['z'] = hole.center['z']
+masterString = slitGenPlane.writeToString(masterString)
+
+print("Lighthole: %f, Slit: %f, Sample: %f" % (light_hole.center['x'], light_hole.center['x'] + slitGenPlane.center['x'], perf.center['x'] + perf.x[HOLE_IN_FRONT_OF_LIGHT - 1])) 
+
+"""
 # Sample holder
 sample_holder = GS.BoxVolume('sampleframe', 6.25, 1.25, 0.33)
 sample_holder.material = 'aluminum'
@@ -275,8 +345,6 @@ for i in range(1, NUM_SAMPLE_HOLES + 1):
     hole.center['x'] = -sample_holder.height/2.0 + i * Delta_H 
     holes.append(hole) 
     masterString = hole.writeToString(masterString) 
-#    hole_sample_border = GS.border(hole.name + "sampleborder", hole.name, sample_holder.name) 
-#    borders.append(hole_sample_border) 
 
     # Apply tpb to hole
     tpb = GS.TubeVolume('tpb%d' % i, hole.rMax, TPB_THICKNESS * 3.93701*10**(-5), 0.0) 
@@ -293,7 +361,7 @@ for i in range(1, NUM_SAMPLE_HOLES + 1):
     masterString = tpb_surface.writeToString(masterString)
     
     # Add test hole on backside
-    sample_test_hole = GS.TubeVolume("test%d" % i, hole.rMax, 0.001, 0.0) 
+    sample_test_hole = GS.TubeVolume("test%d" % i, hole.rMax, 0.05, 0.0) 
     sample_test_hole.material = 'pmt_vacuum'
     sample_test_hole.mother = 'cube'
     sample_test_hole.colorVect[3] = 1.0 
@@ -301,33 +369,32 @@ for i in range(1, NUM_SAMPLE_HOLES + 1):
     y_sample, z_sample = trig_distances(hole.height/2.0 + sample_test_hole.height/2.0, 90 - sample_test_hole.rotation[0]) 
     sample_test_hole.center = {'x': hole.center['x'] + sample_holder.center['x'], 'y': hole.center['y'] + sample_holder.center['y'] + y_sample, \
                                'z': hole.center['z'] + sample_holder.center['z'] + z_sample} 
-    masterString = sample_test_hole.writeToString(masterString)   
-     
+    masterString = sample_test_hole.writeToString(masterString) 
+    """     
 #print(holes[HOLE_IN_FRONT_OF_LIGHT - 1].center['x'] - sample_holder.center['x']) 
 TEST_CYLINDER = GS.TubeVolume('TESTCYLINDER', PHOTODIODE_DISTANCE_FROM_SAMPLE + 0.5, 4.0, PHOTODIODE_DISTANCE_FROM_SAMPLE) 
-TEST_CYLINDER.center = sample_holder.center
+TEST_CYLINDER.center = perf.center
 TEST_CYLINDER.rotation[1] = 90.0 
 TEST_CYLINDER.colorVect[3] = 1.0
 TEST_CYLINDER.mother = 'cube'
+TEST_CYLINDER.material = 'pmt_vacuum'
 #masterString = TEST_CYLINDER.writeToString(masterString)
 
 # Sample support
-SAMPLE_SUPPORT_HEIGHT = cube_positive_x - sample_holder.center['x'] - sample_holder.height/2.0
-sample_support = GS.TubeVolume('samplesupport', sample_holder.depth/2.0, SAMPLE_SUPPORT_HEIGHT, 0.0)
+SAMPLE_SUPPORT_HEIGHT = cube_positive_x - perf.center['x'] - perf.height/2.0
+sample_support = GS.TubeVolume('samplesupport', perf.depth/2.0, SAMPLE_SUPPORT_HEIGHT, 0.0)
 sample_support.material = 'aluminum'
 sample_support.mother = 'cube'
 sample_support.colorVect[3] = 0.7
 sample_support.rotation[1] = 90.0
-sample_support.center = {'x': sample_holder.center['x'] + (sample_holder.height+sample_support.height)/2.0, 'y': sample_holder.center['y'], 'z': sample_holder.center['z']}
+sample_support.center = {'x': perf.center['x'] + (perf.height+sample_support.height)/2.0, 'y': perf.center['y'], 'z': perf.center['z']}
 assert sample_support.center['x'] + sample_support.height/2.0 == cube_positive_x
-assert sample_support.center['x'] - sample_support.height/2.0 == sample_holder.center['x'] + sample_holder.height/2.0
+assert sample_support.center['x'] - sample_support.height/2.0 == perf.center['x'] + perf.height/2.0
 masterString = sample_support.writeToString(masterString)
 support_cube_border = GS.border('supportcubeborder', sample_support.name, cube.name)
 borders.append(support_cube_border)
 #support_holder_border = GS.border('supportholderborder', sample_support.name, sample_holder.name) 
 #borders.append(support_holder_border)
-
-
 
 #for border in borders:
     #masterString = border.writeToString(masterString)

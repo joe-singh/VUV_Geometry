@@ -9,6 +9,8 @@ import random
 def inTomm(inch):
     return inch * 25.4
 
+def convertVal(val):
+    return str(inTomm(float(val)))
 
 class GeoVolume:
     def __init__(self, center_coord={'x':0,'y':0,'z':0 }):
@@ -72,6 +74,58 @@ class TubeVolume(GeoVolume):
         OutputString += 'invisible: '+str(int(self.invisible))+',\n}\n'
         return OutputString
 
+class HoledBox(GeoVolume): 
+    def __init__(self, name, height, width, depth, number, radius, thickness):
+        GeoVolume.__init__(self)
+        self.name = name
+        self.height = height
+        self.width = width
+        self.depth = depth
+        self.number = number
+        self.radius = radius 
+        self.thickness = thickness
+	assert self.thickness <= self.depth
+        self.volType = 'perfbox'
+        self.invisible = 0
+        self.rotation = [0.0, 0.0, 0.0]
+        self.x = [] 
+        self.y = [] 
+        self.r = [] 
+        for i in range(1, number+1): 
+	    x_i = self.height * (i/(number + 1.0) - 0.5) 
+            self.x.append(x_i)
+            self.y.append(0.0)
+            self.r.append(float(radius))   
+
+    def writeToString(self, OutputString): 
+        OutputString += '\n{\nname: "GEO",\nindex: "'+self.name+'",\nvalid_begin: [0,0],\nvalid_end: [0,0],\n'
+        OutputString += 'type: "'+self.volType+'",\n'
+        OutputString += 'mother: "'+self.mother+'",\n' 
+        OutputString += 'size: ['+convertVal(self.height/2.0)+','+convertVal(self.width/2.0)+','+convertVal(self.depth/2.0)+'],\n'	
+        radiusString = 'r_hole: ['
+        xstring = 'x_hole: ['
+        ystring = 'y_hole: ['
+  
+        for i in range(self.number): 
+            if i == self.number - 1:
+                end = '],\n'
+            else:
+                end = ',' 
+            radiusString += convertVal(self.r[i]) + end 
+            xstring += convertVal(self.x[i]) + end 
+            ystring += convertVal(self.y[i]) + end 
+
+        OutputString += radiusString
+        OutputString += xstring    
+        OutputString += ystring
+        OutputString += 'thickness: ' + convertVal(self.thickness) + ',\n'
+        OutputString += 'position: ['+str(inTomm(float(self.center['x'])))+','+str(inTomm(float(self.center['y'])))+','+str(inTomm(float(self.center['z'])))+'],\n'
+        OutputString += 'rotation: ['+str(float(self.rotation[0]))+','+str(float(self.rotation[1]))+','+str(float(self.rotation[2]))+'],\n'
+        OutputString += 'material: "'+self.material+'",\n'
+        OutputString += 'color: ['+str(self.colorVect[0])+','+str(self.colorVect[1])+','+str(self.colorVect[2])+','+str(self.colorVect[3])+'],\n'
+        OutputString += 'drawstyle: "solid",\n'
+        OutputString += 'invisible: '+str(int(self.invisible))+',\n}\n'
+        return OutputString
 #### Classes for a border
 class border:
     def __init__(self,name,volume1,volume2):

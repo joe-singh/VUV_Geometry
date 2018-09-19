@@ -1,2 +1,2 @@
 #!/bin/bash
-srun -p debug --comment="$@" root -q loopOverFiles.cc #$@ >/dev/null 2>&1 &
+srun -p debug --comment="$@" root -q newLoopOverFiles.cc(0, 5, 5, -95, 95, 5) #$@ >/dev/null 2>&1 &

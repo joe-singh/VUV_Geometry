@@ -80,7 +80,7 @@ double photonTracker(std::string fname, double normalAngle, double sampleAngle, 
     int numSteps = photonTrack->GetMCTrackStepCount(); 
      
     RAT::DS::MCTrackStep* lastStep = photonTrack->GetMCTrackStep(numSteps - 1); 
-
+    //std::cout << "Track finishes at " << lastStep->GetVolume() << std::endl;
     double xPos = lastStep->GetEndpoint().x(); 
     double yPos = lastStep->GetEndpoint().y(); 
     double zPos = lastStep->GetEndpoint().z(); 
@@ -92,12 +92,13 @@ double photonTracker(std::string fname, double normalAngle, double sampleAngle, 
     
     for (int iStep = 0; iStep < numSteps; iStep++) {
       RAT::DS::MCTrackStep* photonStep = photonTrack->GetMCTrackStep(iStep);
-
       double xPos = photonStep->GetEndpoint().x(); 
       double yPos = photonStep->GetEndpoint().y(); 
       double zPos = photonStep->GetEndpoint().z(); 
       yzHist->Fill(yPos, zPos); 
-      double yComponent = photonStep->GetMomentum().Dot(hatY);     
+      double yComponent = photonStep->GetMomentum().Dot(hatY);    
+ 
+      
      // Count all photons going through hole in positive direction, these enter the cube. 
      if (photonStep->GetVolume() == "test2" /*|| photonStep->GetVolume() == "test2" || photonStep->GetVolume() == "test1" || photonStep->GetVolume() == "test4"*/) {
           goneThroughDownStream = true;

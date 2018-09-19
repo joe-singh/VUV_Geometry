@@ -119,7 +119,8 @@ class HoledBox(GeoVolume):
         OutputString += xstring    
         OutputString += ystring
         OutputString += 'thickness: ' + convertVal(self.thickness) + ',\n'
-        OutputString += 'position: ['+str(inTomm(float(self.center['x'])))+','+str(inTomm(float(self.center['y'])))+','+str(inTomm(float(self.center['z'])))+'],\n'
+        OutputString += 'position: ['+str(inTomm(float(self.center['x'])))+','+str(inTomm(float(self.center['y'])))+','+str(inTomm(float(self.center['z'])))+'],\n' 
+        print("X COORDINATE FOR PERF: " + str(inTomm(float(self.center['x']))) + "ACTUAL X COORDINATE GIVEN: " + str(self.center['x']))
         OutputString += 'rotation: ['+str(float(self.rotation[0]))+','+str(float(self.rotation[1]))+','+str(float(self.rotation[2]))+'],\n'
         OutputString += 'material: "'+self.material+'",\n'
         OutputString += 'color: ['+str(self.colorVect[0])+','+str(self.colorVect[1])+','+str(self.colorVect[2])+','+str(self.colorVect[3])+'],\n'

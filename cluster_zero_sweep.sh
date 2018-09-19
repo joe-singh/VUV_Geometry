@@ -1,18 +1,13 @@
 #!/bin/bash
 
-n="-95"
-while [ $n -lt 100 ]
+n="-90"
+while [ $n -lt 95 ]
 do
     srun -p debug python geoGenMain.py 0.0 $n
     echo ">>> Done $n"
-    srun -p debug --comment="$@VUVSim_0.0_$n" rat -o ./zero_angle_sweep_highstats/no_cylinder_angle_0_$n.root photon.mac $@ >/dev/null 2>&1 &
-    sleep 0.5
-    #if [ -e ./zero_angle_sweep_highstats/no_cylinder_angle_0_$n.root ] 
-    #then     
-    #    echo ">>> File Created"
-    #else  
-    #    echo ">>> File Not Created at Angle $n"
-    #    exit 1
-    #fi
+    if [ ! -d "./zero_angle_sweep_highstats/angle_$n" ]; then 
+        mkdir ./zero_angle_sweep_highstats/angle_$n
+    fi 
+    srun -p debug --comment="$@VUVSim_0.0_$n" rat -o ./zero_angle_sweep_highstats/angle_$n/no_cylinder_angle_0_$n.root photon.mac $@ >/dev/null 2>&1 
 n=$[n+5]
 done

@@ -1,0 +1,12 @@
+/glg4debug/glg4param omit_muon_processes  1.0
+/glg4debug/glg4param omit_hadronic_processes  1.0
+/rat/db/set DETECTOR geo_file "./VUV_-25_.geo"
+/run/initialize
+/rat/proc count
+/rat/procset update 1000
+/rat/proclast outroot
+/tracking/storeTrajectory 1
+/generator/add combo gun2:point
+/generator/vtx/set opticalphoton 0.0 1.0 0.0 0.0 0.0000071 0.0000071
+/generator/pos/set -101.6 -300.0 0.0
+/run/beamOn 1000000

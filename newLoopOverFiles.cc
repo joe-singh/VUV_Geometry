@@ -133,7 +133,9 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
     std::vector<double> normalAngles; 
     std::vector<double> intensities; 
     std::vector<double> errors; 
-  
+ 
+    TH1F* hist = new TH1F("angularDist", "Photon Angular Distribution;Angle From Normal / Degrees;Number of Photons", 100, -90, 90); 
+    hist->SetLineWidth(2); 
     for (int normalAngle = normalMin; normalAngle < normalMax + normalDelta; normalAngle += normalDelta) {
 
       char filename[1000];
@@ -144,12 +146,13 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
       intensities.push_back(photonCount); 
       errors.push_back(sqrt(photonCount));      
 
+      hist->Fill(normalAngle, photonCount); 
   }
   
   double* normalArray = &normalAngles[0]; 
   double* intensityArray = &intensities[0]; 
   double* errorArray = &errors[0]; 
- 
+  
   TGraphErrors* gr = new TGraphErrors(normalAngles.size(), normalArray, intensityArray, 0, errorArray); 
   gr->SetMarkerStyle(21);
   gr->SetLineWidth(2);
@@ -158,6 +161,7 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
   gr->GetYaxis()->SetTitle("Number Of Photons");
   
   outf->WriteTObject(gr); 
+  outf->WriteTObject(hist); 
   mg->Add(gr); 
 
  } 

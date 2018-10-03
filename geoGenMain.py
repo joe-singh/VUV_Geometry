@@ -3,7 +3,7 @@ import numpy as np
 import sys
 
 masterString = ''
-file_name = './VUV.geo'
+file_name = './VUV_'+str(sys.argv[2])+'_.geo'
 
 # NOTE 12inches in 1 foot
 
@@ -113,7 +113,7 @@ LAR.material = 'liquid_Ar'
 LAR.rotation[1] = -90.0
 LAR.rotation[0] = 90.0 - SAMPLE_HOUSING_ANGLE
 LAR.center = {'x': cube_negative_x + BASE_PLATE_HEIGHT + PHOTODIODE_BOTTOM_ARM_THICKNESS + LAR.height/2.0, 'y': sample_housing.center['y'], 'z': 0.0} 
-LAR.colorVect[3] = 0.7
+LAR.colorVect[3] = 0.4
 
 """
 LAR = GS.BoxVolume('LAr', cube.height - BASE_PLATE_HEIGHT - PHOTODIODE_BOTTOM_ARM_THICKNESS - 1e-5, 2.0, 2.0) 

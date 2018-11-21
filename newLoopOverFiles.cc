@@ -1,4 +1,6 @@
 # include <iostream>
+# include <sstream>
+# include <TROOT.h>
 # include <TFile.h>
 # include <TTree.h>
 # include <TH1D.h>
@@ -11,8 +13,21 @@
 # include <TCanvas.h>
 # include <math.h>
 # include <TMultiGraph.h>
+# include <TGraphErrors.h>
+# include <RAT/DS/Root.hh>
+# include <RAT/DS/MC.hh>
+# include <RAT/DS/MCTrack.hh>
+# include <RAT/DS/MCTrackStep.hh>
 
 const double PI = 3.14159265358979323846;
+
+int strToInt(char* ch) {
+    std::stringstream ss;
+    ss << ch; 
+    int num;
+    ss >> num; 
+    return num; 
+}
 
 TVector3 getNormal(double angle) {
   
@@ -90,7 +105,7 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
          upstreamAngle->Fill(cos_theta); 
         } 
 
-        if (photonStep->GetVolume() == "photodiodetest") {
+        if (photonStep->GetVolume() == "verticalSurface" || photonStep->GetVolume() == "photodiodetest") {
          numPhotodiode++; 
   //       TVector3 photoDiodeNormal = hatY;//getNormal(normalAngle); 
          RAT::DS::MCTrackStep* p = photonTrack->GetMCTrackStep(iStep-1);
@@ -122,24 +137,26 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
                       int normalMin, int normalMax, int normalDelta) {
   
   gROOT->SetBatch(kTRUE); 
-  TFile* outf = new TFile("angularTPB.root", "RECREATE"); 
+  TFile* outf = new TFile("angular_sweeps.root", "RECREATE"); 
   TMultiGraph* mg = new TMultiGraph(); 
   TFile* diagnosticAngle = new TFile("angularDiagnostics.root", "RECREATE");   
  
   for (int sampleAngle = sampleMin; sampleAngle < sampleMax + sampleDelta; sampleAngle += sampleDelta) {
-
+    
     int numDataPoints = (normalMax - normalMin)/normalDelta + 1;
     std::cout << numDataPoints << std::endl;
     std::vector<double> normalAngles; 
     std::vector<double> intensities; 
     std::vector<double> errors; 
- 
-    TH1F* hist = new TH1F("angularDist", "Photon Angular Distribution;Angle From Normal / Degrees;Number of Photons", 100, -90, 90); 
+    
+    char histname[1000];
+    sprintf(histname, "angularDist_%d", sampleAngle); 
+    TH1F* hist = new TH1F(histname, "Photon Angular Distribution;Angle From Normal / Degrees;Number of Photons", 500, -90, 90); 
     hist->SetLineWidth(2); 
     for (int normalAngle = normalMin; normalAngle < normalMax + normalDelta; normalAngle += normalDelta) {
 
       char filename[1000];
-      sprintf(filename, "./zero_angle_sweep_highstats/angle_%d/no_cylinder_angle_0_%d.root", normalAngle, normalAngle);
+      sprintf(filename, "./angle_sweep/angle_%d/no_cylinder_angle_%d.%d.root", sampleAngle, sampleAngle,normalAngle);
       double photonCount = photonTracker(filename, normalAngle, sampleAngle, diagnosticAngle);
   
       normalAngles.push_back(normalAngle); 
@@ -157,21 +174,23 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
   gr->SetMarkerStyle(21);
   gr->SetLineWidth(2);
   gr->SetLineStyle(9);
+  gr->SetLineColor(sampleAngle); 
   gr->GetXaxis()->SetTitle("Angle from Normal / degrees");
   gr->GetYaxis()->SetTitle("Number Of Photons");
   
-  outf->WriteTObject(gr); 
+  gr->SetTitle(histname); 
+  gr->SetName(histname);  
+  //outf->WriteTObject(gr); 
   outf->WriteTObject(hist); 
   mg->Add(gr); 
-
  } 
  
  std::cout << "LOOP COMPLETE" << std::endl;
- 
+ mg->SetName("distribution_multigraph");  
  outf->WriteTObject(mg); 
  TCanvas* canv = new TCanvas("c", "c", 1000, 600);
- //mg->GetXaxis()->SetTitle("Angle from Normal / degrees"); 
- //mg->GetYaxis()->SetTitle("Normalised Intensity"); 
+ mg->GetXaxis()->SetTitle("Angle from Normal / degrees"); 
+ mg->GetYaxis()->SetTitle("Normalised Intensity"); 
  mg->Draw("apc");
  mg->GetXaxis()->SetTitle("Angle from Normal / Degrees");
  mg->GetYaxis()->SetTitle("Number of Photons");
@@ -180,4 +199,15 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 
  std::cout << "COMPLETE!" << std::endl;
 
+}
+
+int main(int argc, char* argv[]) {
+   int samplemin = strToInt(argv[1]);
+   int samplemax = strToInt(argv[2]); 
+   int sampledelta = strToInt(argv[3]); 
+   int normalmin = strToInt(argv[4]);
+   int normalmax = strToInt(argv[5]); 
+   int normaldelta = strToInt(argv[6]);  
+   newLoopOverFiles(samplemin, samplemax, sampledelta, normalmin, normalmax, normaldelta); 
+   return 0; 
 }

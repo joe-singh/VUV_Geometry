@@ -1,15 +1,19 @@
 #!/bin/bash
 
-n="-90"
-while [ $n -lt 95 ]
+s="0"
+while [ $s -lt 1 ]
 do
-    srun -p debug python geoGenMain.py 0.0 $n
-    srun -p debug python makePhotonMacro.py $n
-    echo ">>> Done $n"
-    if [ ! -d "./zero_angle_sweep_highstats/angle_$n" ]; then 
-        mkdir ./zero_angle_sweep_highstats/angle_$n
-    fi 
-    srun -p debug --comment="$@VUVSim_0.0_$n" rat -o ./zero_angle_sweep_highstats/angle_$n/no_cylinder_angle_0_$n.root ./macros/photon_$n.mac $@ >/dev/null 2>&1 &
-
-n=$[n+5]
+    if [ ! -d "./angle_sweep/angle_$s" ]; then
+        mkdir ./angle_sweep/angle_$s
+    fi
+    n="-50" 
+    while [ $n -lt 51 ]
+    do
+        srun -p debug python geoGenMain.py $s $n
+        srun -p debug python makePhotonMacro.py $s $n
+    echo ">>> Done $s $n"
+    srun -p debug --comment="$@VUVSim_$s_$n" rat -o ./angle_sweep/angle_$s/no_cylinder_angle_$s.$n.root ./macros/photon_$s.$n.mac $@ >/dev/null 2>&1 &
+    n=$[n+1]
+    done 
+s=$[s+1]
 done

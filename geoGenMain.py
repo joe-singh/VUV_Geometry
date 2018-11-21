@@ -3,7 +3,7 @@ import numpy as np
 import sys
 
 masterString = ''
-file_name = './VUV_'+str(sys.argv[2])+'_.geo'
+file_name = './VUV_'+str(sys.argv[1])+'_'+str(sys.argv[2])+'_.geo'
 
 # NOTE 12inches in 1 foot
 
@@ -255,6 +255,15 @@ y_pdt_offset, z_pdt_offset = trig_distances(1e-1 + photodiode.height/2.0 + photo
 photodiodetest.center = {'x': photodiode.center['x'], 'y': photodiode.center['y'] - y_pdt_offset, 'z': photodiode.center['z'] - z_pdt_offset} 
 photodiodetest.rotation[0] = 90.0 - PHOTODIODE_THETA
 masterString = photodiodetest.writeToString(masterString)
+
+verticalSurface = GS.BoxVolume('verticalSurface', 2*photodiode.rMax, 0.01, 0.1)
+verticalSurface.material = 'pmt_vacuum'
+verticalSurface.mother = 'cube'
+verticalSurface.colorVect[3] = 1.0
+y_vs_offset, z_vs_offset = trig_distances(1e-1 + photodiode.height/2.0 + photodiodetest.height/2.0, PHOTODIODE_THETA)
+verticalSurface.center = {'x': photodiode.center['x'], 'y': photodiode.center['y'] - y_pdt_offset, 'z': photodiode.center['z'] - z_pdt_offset}
+verticalSurface.rotation[0] = -PHOTODIODE_THETA
+#masterString = verticalSurface.writeToString(masterString)
 
 if CYLINDER_FLAG:
     sample_mother = LAR

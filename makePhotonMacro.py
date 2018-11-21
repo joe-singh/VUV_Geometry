@@ -1,14 +1,15 @@
 import sys
 
-angle = sys.argv[1]
-fname = './macros/photon_'+str(int(float(angle)))+'.mac'
+angle = sys.argv[2]
+sample_angle = sys.argv[1]
+fname = './macros/photon_'+str(int(float(sample_angle)))+'.'+str(int(float(angle)))+'.mac'
 f = open(fname, 'w')
 
 
 f.write('/glg4debug/glg4param omit_muon_processes  1.0\n')
 f.write('/glg4debug/glg4param omit_hadronic_processes  1.0\n')
 
-f.write('/rat/db/set DETECTOR geo_file "./VUV_'+angle+'_.geo"\n')
+f.write('/rat/db/set DETECTOR geo_file "./VUV_'+sample_angle+'_'+angle+'_.geo"\n')
 
 f.write('/run/initialize\n')
 

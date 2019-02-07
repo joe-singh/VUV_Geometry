@@ -1,7 +1,8 @@
 /glg4debug/glg4param omit_muon_processes  1.0
 /glg4debug/glg4param omit_hadronic_processes  1.0
 
-/rat/db/set DETECTOR geo_file "./VUV.geo"
+/rat/db/set OPTICS[tpb] RINDEX_value2 1.00
+/rat/db/set DETECTOR geo_file "VUV_0.0_90.0_.geo"
 
 /run/initialize
 
@@ -12,15 +13,15 @@
 
 /tracking/storeTrajectory 1
 
-#/generator/add combo gun2:regexfill
+/generator/add combo gun2:regexfill
 #/generator/pos/set -0.0 -0.0 0.0 
-/generator/add combo gun2:point
+#/generator/add combo gun2:point
 # For 20 degrees
-/generator/vtx/set opticalphoton 0.0 1.0 0.0 0.0 0.0000071 0.0000071 # Wavelength 175 nm, Energy in MeV 
+/generator/vtx/set opticalphoton 0.0 1.0 0.0 0.0 0.000009686 0.000009686 # Wavelength 128 nm, Energy in MeV 
 # For debug 
 #/generator/pos/set 0.0 0.0 0.0
-/generator/pos/set -101.6 -300.0 0.0 
-#/generator/pos/set slitGenPlane #-101.6 -310.0 0.0 
+#/generator/pos/set -101.6 -300.0 0.0 
+/generator/pos/set slitGenPlane #-101.6 -310.0 0.0 
 
 #/generator/pos/set -101.6 -310.0 0.0 
 

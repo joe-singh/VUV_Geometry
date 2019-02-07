@@ -16,6 +16,7 @@ $(EXE): $(EXE).cc
 	g++ -c $<
 
 clean:
+	rm macros/*
 	rm *.log
 	rm *.geo
 .PHONY: clean

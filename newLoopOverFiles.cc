@@ -151,7 +151,7 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
     
     char histname[1000];
     sprintf(histname, "angularDist_%d", sampleAngle); 
-    TH1F* hist = new TH1F(histname, "Photon Angular Distribution;Angle From Normal / Degrees;Number of Photons", 500, -90, 90); 
+    TH1F* hist = new TH1F(histname, "Photon Angular Distribution;Angle From Normal / Degrees;Number of Photons", 500, normalMin, normalMax + normalDelta); 
     hist->SetLineWidth(2); 
     for (int normalAngle = normalMin; normalAngle < normalMax + normalDelta; normalAngle += normalDelta) {
 

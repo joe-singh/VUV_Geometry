@@ -284,8 +284,9 @@ sample_disk_offset = 0.0*0.04
 sample_axis_shift = 0.35/2.0 - sample_disk_offset  #Accounting for the fact that the face is 0.04 inches behind the front face of the sample
 
 if not CYLINDER_FLAG:
-    perf.rotation[0] = 90.0 - SAMPLE_HOUSING_ANGLE
-    y_perf, z_perf = trig_distances(sample_axis_shift, perf.rotation[0])
+    perf.rotation[0] = 90 - SAMPLE_HOUSING_ANGLE
+    z_perf, y_perf = trig_distances(sample_axis_shift, perf.rotation[0])
+    print("Yperf %s, Zperf %s" % (y_perf, z_perf))
     perf.center = {'x': light_hole.center['x'], 'y': sample_housing.center['y'] + y_perf,  'z': sample_housing.center['z'] + z_perf}
     print("PERF CENTER - SHIFT: %s" % (perf.center['y'] - y_perf))
     height_offset = perf.center['x'] + perf.x[HOLE_IN_FRONT_OF_LIGHT - 1] - light_hole.center['x']
@@ -299,7 +300,9 @@ if CYLINDER_FLAG:
     perf.center['z'] -= height_offset
     perf_z = perf.center['z']
     hole_locations = perf.x 
-#masterString = perf.writeToString(masterString)
+masterString = perf.writeToString(masterString)
+print("Perf centre (%s, %s) at %s deg incidence" % (perf.center['y'], perf.center['z'], SAMPLE_HOUSING_ANGLE))
+
 
 sample_holder_border = GS.border('perfborder', perf.name, cube.name) 
 #masterString = sample_holder_border.writeToString(masterString); 
@@ -314,7 +317,7 @@ for i in range(1, len(perf.x) + 1):
     hole.colorVect[3] = 0.9
     if not CYLINDER_FLAG:
         hole.rotation[0] = perf.rotation[0]
-        y_hole, z_hole = trig_distances((0.35-sample_thickness)/2.0 - sample_disk_offset, 90 - hole.rotation[0]) # Sample face is 0.04 inches behind holder face
+        y_hole, z_hole = trig_distances((0.35-sample_thickness)/2.0 - sample_disk_offset,90 - hole.rotation[0]) # Sample face is 0.04 inches behind holder face
         hole.center = {'x': perf.center['x'] + height, 'y': perf.center['y'] - y_hole, 'z': perf.center['z'] - z_hole} 
     if CYLINDER_FLAG:
         hole.rotation[1] = 90.0
@@ -339,7 +342,7 @@ for i in range(1, len(perf.x) + 1):
         tpb.center['x'] = hole.center['x']
         tpb.center['y'] = hole.center['y'] - y_tpb # hole.height/2.0 - tpb.height/2.0  #y_tpb
         tpb.center['z'] = hole.center['z'] - z_tpb 
-        print("Tpb z: %f, tpb y: %f" % (z_tpb, y_tpb)) 
+        #print("Tpb z: %f, tpb y: %f" % (z_tpb, y_tpb)) 
     else: 
         tpb.rotation[1] = 90.0
         tpb.center = {'y': 0.0, 'x': hole.height/2.0 + tpb.height/2.0 + 1e-6, 'z': hole.center['z']}
@@ -361,7 +364,7 @@ for i in range(1, len(perf.x) + 1):
     sample_test_hole.colorVect[3] = 1.0
     sample_test_hole.rotation[0] = perf.rotation[0]
     y_sample, z_sample = trig_distances(1e-6 + hole.height/2.0 + sample_test_hole.height/2.0, 90 - sample_test_hole.rotation[0])
-    print("sampledisk z: %f, sampledisk y: %f" % (z_sample, y_sample)) 
+    #print("sampledisk z: %f, sampledisk y: %f" % (z_sample, y_sample)) 
     sample_test_hole.center['x'] = hole.center['x']
     sample_test_hole.center['y'] = hole.center['y'] + y_sample # 1e-6 + hole.height/2.0 + sample_test_hole.height/2.0 # y_sample
     sample_test_hole.center['z'] = hole.center['z'] + z_sample

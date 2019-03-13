@@ -362,7 +362,7 @@ for i in range(1, len(perf.x) + 1):
     #masterString = sample_test_hole.writeToString(masterString)
 
 #slitGenPlane = GS.BoxVolume('slitGenPlane', slit_width, slit_height, 0.1)
-slitGenPlane = GS.TubeVolume('slitGenPlane', slit_width, 0.1 , 0.0); 
+slitGenPlane = GS.TubeVolume('slitGenPlane', slit_width, 0.25, 0.0); 
 slitGenPlane.material = 'pmt_vacuum'
 slitGenPlane.mother = 'light_hole'
 slitGenPlane.colorVect[3] = 1.0

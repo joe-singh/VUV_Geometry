@@ -1,5 +1,6 @@
 # include <iostream>
 # include <sstream>
+# include <exception>
 # include <TROOT.h>
 # include <TFile.h>
 # include <TTree.h>
@@ -41,6 +42,10 @@ TVector3 getNormal(double angle) {
 double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile* diagnostic) {
   std::cout << fname << std::endl;
   TFile* file = new TFile(fname.c_str(), "READ");
+  if (file->IsZombie()) {
+    std::cout << "File " << fname << " is zombie, will skip it." << std::endl;
+    throw std::bad_alloc();
+  }
   TTree* tr = (TTree*) file->Get("T");
 
   RAT::DS::Root* rds = new RAT::DS::Root();
@@ -157,7 +162,15 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 
       char filename[1000];
       sprintf(filename, "./angle_sweep/angle_%d/no_cylinder_angle_%d.%d.root", sampleAngle, sampleAngle,normalAngle);
-      double photonCount = photonTracker(filename, normalAngle, sampleAngle, diagnosticAngle);
+      double photonCount = -1;
+      try {
+        photonCount = photonTracker(filename, normalAngle, sampleAngle, diagnosticAngle);
+      } catch (const std::exception& exc) {
+        std::cout << "Exception raised: " << exc.what() << std::endl;
+        TFile* file = dynamic_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(filename)); // clean up zombie ROOT file that was created in photonTracker() method
+        delete file;
+        continue;
+      }
 
       normalAngles.push_back(normalAngle); 
       intensities.push_back(photonCount); 
@@ -175,6 +188,8 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
     gr->SetLineWidth(2);
     gr->SetLineStyle(9);
     gr->SetLineColor(sampleAngle); 
+    gr->SetLineColor((sampleAngle - sampleMin) % 10); 
+    gr->SetMarkerColor((sampleAngle - sampleMin) % 10); 
     gr->GetXaxis()->SetTitle("Angle from Normal / degrees");
     gr->GetYaxis()->SetTitle("Number Of Photons");
 

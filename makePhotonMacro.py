@@ -61,13 +61,13 @@ f.write('/generator/pos/set slitGenPlane normal2d x 0 ' + str(sigma_beam_mm) + '
 
 #/generator/pos/set -101.6 -310.0 0.0 
 
-### Settings for visualization
-f.write('/tracking/FillPointCont true\n')
-f.write('/tracking/storeTrajectory 3\n')
-f.write('/vis/scene/endOfEventAction accumulate\n') # accumulate photon tracks
-
-### Add aesthetic x-y-z axis coordinates in visualization
-f.write('/vis/scene/add/axes 0 0 0 10 cm\n')
+#### Settings for visualization
+#f.write('/tracking/FillPointCont true\n')
+#f.write('/tracking/storeTrajectory 3\n')
+#f.write('/vis/scene/endOfEventAction accumulate\n') # accumulate photon tracks
+#
+#### Add aesthetic x-y-z axis coordinates in visualization
+#f.write('/vis/scene/add/axes 0 0 0 10 cm\n')
 
 ### Run simulation
 #f.write('/run/beamOn 1000000\n')

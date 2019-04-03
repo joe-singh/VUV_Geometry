@@ -269,7 +269,7 @@ if CYLINDER_FLAG:
 else: 
     sample_mother = cube
 
-perf = GS.HoledBox('sampleholder', 6.155, 1.25, 0.35, NUM_SAMPLE_HOLES, 0.5, 0.1)
+perf = GS.HoledBox('sampleholder', 6.155, 1.25, 0.35, NUM_SAMPLE_HOLES, 0.505, 0.0)
 perf.material = 'aluminum'
 perf.mother = sample_mother.name
 perf.colorVect[3] = 0.3

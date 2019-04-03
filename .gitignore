@@ -5,6 +5,4 @@
 *.geo
 *.mac
 *.swp
-*_plot.pdf
-*_plot.C
 *.heprep

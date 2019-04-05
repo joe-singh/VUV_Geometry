@@ -27,8 +27,11 @@ LIGHT_HOLE_DIAMETER = 1.5
 PHOTODIODE_BOTTOM_ARM_THICKNESS = 0.5
 PHOTODIODE_DISTANCE_FROM_SAMPLE = 5.5
 
-slit_width = 0.1535
-slit_height = 0.1535
+BEAM_FWHM = 0.1535 # inch
+BEAM_SIGMA = BEAM_FWHM/(2*np.sqrt(2*np.log(2)))
+slit_width = 5*BEAM_SIGMA # 5 sigma when generating gaussian profile beam
+#slit_height = 5*BEAM_SIGMA # 5 sigma when generating gaussian profile beam
+#slit_width = BEAM_FWHM # FWHM with generating flat top beam with diameter FWHM
  
 PHOTODIODE_HEIGHT = 0.38
 NUM_SAMPLE_HOLES = 4

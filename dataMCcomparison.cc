@@ -66,7 +66,8 @@ TMultiGraph* makeMergedPlot(int n_datapoints, double* angles, double* rates, dou
  TGraphErrors* data = new TGraphErrors(n_datapoints, angles, rates, angle_err, rate_err);
  data->SetMarkerStyle(8); 
  data->SetMarkerColor(kRed);
- data->SetLineColor(kRed); 
+ data->SetLineColor(kRed);
+ data->SetFillColor(kWhite); 
  data->SetTitle("Data"); 
  
  int n_mc = mc->GetN(); 
@@ -79,7 +80,6 @@ TMultiGraph* makeMergedPlot(int n_datapoints, double* angles, double* rates, dou
  normalise(mc_ey, n_mc, 1/mc_factor); 
  normalise(mc_y, n_mc, 1/mc_factor);
  if (isBackFace) {
- 
   for (int i = 0; i < n_mc; i++) {
     mc_x[i] -= 180.0;   
   }
@@ -89,7 +89,8 @@ TMultiGraph* makeMergedPlot(int n_datapoints, double* angles, double* rates, dou
 
  mc->SetMarkerStyle(8);
  mc->SetMarkerColor(kBlack); 
- mc->SetLineColor(kBlack); 
+ mc->SetLineColor(kBlack);
+ mc->SetFillColor(kWhite); 
  mc->SetTitle("MC"); 
 
  TMultiGraph* comparison = new TMultiGraph();

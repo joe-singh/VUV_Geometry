@@ -10,6 +10,7 @@ def wavelengthToEnergy(wavelength):
 
 energy = wavelengthToEnergy(float(sys.argv[3]))
 
+n_photon = sys.argv[4]
 angle = sys.argv[2]
 sample_angle = sys.argv[1]
 fname = './macros/photon_'+str(int(float(sample_angle)))+'.'+str(int(float(angle)))+'.mac'
@@ -24,7 +25,7 @@ f.write('/run/initialize\n')
 
 ### Visualization commands
 #f.write('/vis/open HepRepFile\n') # command to use HepRep visualization
-##f.write('/vis/open OGL\n') # option to use OGL visualization exists too if you want
+#write('/vis/open OGL\n') # option to use OGL visualization exists too if you want
 #f.write('/vis/drawVolume\n')
 #f.write('/vis/viewer/flush\n')
 #f.write('/vis/scene/add/trajectories\n')
@@ -70,4 +71,4 @@ f.write('/vis/scene/endOfEventAction accumulate\n') # accumulate photon tracks
 f.write('/vis/scene/add/axes 0 0 0 10 cm\n')
 
 ### Run simulation
-#f.write('/run/beamOn 1000000\n')
+f.write('/run/beamOn %s\n' %(n_photon))

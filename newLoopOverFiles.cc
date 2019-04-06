@@ -13,11 +13,13 @@
 # include <TCanvas.h>
 # include <math.h>
 # include <TMultiGraph.h>
+# include <TLegend.h>
 # include <TGraphErrors.h>
 # include <RAT/DS/Root.hh>
 # include <RAT/DS/MC.hh>
 # include <RAT/DS/MCTrack.hh>
 # include <RAT/DS/MCTrackStep.hh>
+# include <TSystem.h>
 
 const double PI = 3.14159265358979323846;
 
@@ -40,6 +42,10 @@ TVector3 getNormal(double angle) {
 
 double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile* diagnostic) {
   std::cout << fname << std::endl;
+  if (gSystem->AccessPathName(fname.c_str())) {
+    std::cout << "File " << fname << " does not exist, assuming 0 photons detected" << std::endl; 
+    return 0.0;
+  }
   TFile* file = new TFile(fname.c_str(), "READ");
   TTree* tr = (TTree*) file->Get("T");
 
@@ -58,6 +64,7 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
   TH1F* downstreamAngle = new TH1F(downstreamName, "Downstream Angle", 100, -1.1, 1.1);
   TH2F* yzPositions = new TH2F(positionName, "Y-Z Positions", 100, -500, 500, 100, -100, 100); 
   TH1F* wavelength = new TH1F(wavelengthName, "Wavelength", 100, 0, 400); 
+  TH1F* zDist = new TH1F("zDist", "Ray z-position distribution", 50, -1.5, 1.5); 
   
   TVector3 hatX = TVector3(1.0,0,0);
   TVector3 hatY = TVector3(0,1.0,0);
@@ -103,6 +110,7 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
          numCube++; 
          double cos_theta = (photonStep->GetMomentum().Dot(hatY))/(photonStep->GetMomentum().Mag());
          upstreamAngle->Fill(cos_theta); 
+         zDist->Fill(zPos); 
         } 
 
         if (photonStep->GetVolume() == "verticalSurface" || photonStep->GetVolume() == "photodiodetest") {
@@ -126,7 +134,8 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
   diagnostic->WriteTObject(upstreamAngle);
   diagnostic->WriteTObject(downstreamAngle); 
   diagnostic->WriteTObject(yzPositions);
-  diagnostic->WriteTObject(wavelength); 
+  diagnostic->WriteTObject(wavelength);
+  diagnostic->WriteTObject(zDist); 
   return double(numPhotodiode); 
 
 } 
@@ -138,7 +147,8 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
   
   gROOT->SetBatch(kTRUE); 
   TFile* outf = new TFile("angular_sweeps.root", "RECREATE"); 
-  TMultiGraph* mg = new TMultiGraph(); 
+  TMultiGraph* mg = new TMultiGraph();
+  auto leg = new TLegend(0.1,0.7,0.2,0.9); 
   TFile* diagnosticAngle = new TFile("angularDiagnostics.root", "RECREATE");   
  
   for (int sampleAngle = sampleMin; sampleAngle < sampleMax + sampleDelta; sampleAngle += sampleDelta) {
@@ -174,27 +184,33 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
   gr->SetMarkerStyle(21);
   gr->SetLineWidth(2);
   gr->SetLineStyle(9);
-  gr->SetLineColor(sampleAngle); 
+  int colour = sampleAngle - sampleMin - 2;
+  if (colour == 10) colour = 28; // Account for white 
+  gr->SetLineColor(colour);
+  gr->SetMarkerColor(colour); 
   gr->GetXaxis()->SetTitle("Angle from Normal / degrees");
   gr->GetYaxis()->SetTitle("Number Of Photons");
-  
+   
   gr->SetTitle(histname); 
   gr->SetName(histname);  
   //outf->WriteTObject(gr); 
   outf->WriteTObject(hist); 
-  mg->Add(gr); 
+  mg->Add(gr);
+
+  char graphname[1000];
+  sprintf(graphname, "%d", sampleAngle); 
+  gr->SetTitle(graphname); 
+  leg->AddEntry(gr);  
  } 
  
  std::cout << "LOOP COMPLETE" << std::endl;
  mg->SetName("distribution_multigraph");  
  outf->WriteTObject(mg); 
  TCanvas* canv = new TCanvas("c", "c", 1000, 600);
- mg->GetXaxis()->SetTitle("Angle from Normal / degrees"); 
- mg->GetYaxis()->SetTitle("Normalised Intensity"); 
  mg->Draw("apc");
- mg->GetXaxis()->SetTitle("Angle from Normal / Degrees");
+ leg->Draw();
+ mg->GetXaxis()->SetTitle("Angle from Normal / degrees"); 
  mg->GetYaxis()->SetTitle("Number of Photons");
- canv->BuildLegend();
  outf->WriteTObject(canv);
 
  std::cout << "COMPLETE!" << std::endl;

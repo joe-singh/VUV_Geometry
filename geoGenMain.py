@@ -269,12 +269,12 @@ if CYLINDER_FLAG:
 else: 
     sample_mother = cube
 
-perf = GS.HoledBox('sampleholder', 6.155, 1.25, 0.35, NUM_SAMPLE_HOLES, 0.5, 0.1)
+perf = GS.HoledBox('sampleholder', 6.155, 1.25, 0.35, NUM_SAMPLE_HOLES, 0.5, 0.0)
 perf.material = 'aluminum'
 perf.mother = sample_mother.name
 perf.colorVect[3] = 0.3
 
-sample_disk_offset = 1.0*0.04
+sample_disk_offset = 0.04
 sample_axis_shift = 0.35/2.0 - sample_disk_offset  #Accounting for the fact that the face is 0.04 inches behind the front face of the sample
 
 if not CYLINDER_FLAG:
@@ -305,7 +305,7 @@ hole_locations = perf.x
 
 for i in range(1, len(perf.x) + 1):
     height = float(perf.x[i-1])
-    hole = GS.TubeVolume('hole_%d' % i, 0.5, sample_thickness, 0.0)
+    hole = GS.TubeVolume('hole_%d' % i, 0.5, sample_thickness, 0.0) # make sure thickness is correct here!
     hole.material = 'acrylic_suvt'
     hole.mother = sample_mother.name
     hole.colorVect[3] = 0.9
@@ -326,7 +326,7 @@ for i in range(1, len(perf.x) + 1):
     #masterString = hole_border.writeToString(masterString) 
 
     tpb = GS.TubeVolume('tpb_%d' % i, hole.rMax, TPB_THICKNESS * 3.93701*10**(-5), 0.0)
-    tpb.material = 'pmt_vacuum'  #$'tpb'
+    tpb.material = 'tpb' #'pmt_vacuum' 
     tpb.mother = sample_mother.name
     tpb.colorVect[3] = 1.0
     tpb.rotation[0] = perf.rotation[0]
@@ -340,12 +340,24 @@ for i in range(1, len(perf.x) + 1):
     else: 
         tpb.rotation[1] = 90.0
         tpb.center = {'y': 0.0, 'x': hole.height/2.0 + tpb.height/2.0 + 1e-6, 'z': hole.center['z']}
-    #masterString = tpb.writeToString(masterString)
+    # masterString = tpb.writeToString(masterString)
 
     tpb_surface = GS.border('tpb_surface_%d' % i, sample_mother.name, tpb.name)
     tpb_surface.mother = sample_mother.name
     tpb_surface.surface = 'tpb_surface_border'
-    #masterString = tpb_surface.writeToString(masterString)
+    # masterString = tpb_surface.writeToString(masterString)
+    
+    # Ring behind sample 
+    ring = GS.TubeVolume('ring_%d' % i, hole.rMax, 0.077, 0.4525) # XXX Smaller inner diameter to test if it exists!
+    ring.material = 'acrylic_black'
+    ring.mother = sample_mother.name 
+    ring.rotation[0] = perf.rotation[0]
+    y_ring, z_ring = trig_distances(hole.height/2.0 + ring.height/2.0 + 1e-6, 90 - ring.rotation[0])
+    ring.center['x'] = hole.center['x']
+    ring.center['y'] = hole.center['y'] + y_tpb
+    ring.center['z'] = hole.center['z'] + z_tpb
+    masterString = ring.writeToString(masterString) 
+     
 
     mirror_surface = GS.border('mirror_surface_%d' % i, sample_mother.name, hole.name)
     mirror_surface.mother = sample_mother.name

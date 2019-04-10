@@ -348,14 +348,14 @@ for i in range(1, len(perf.x) + 1):
     # masterString = tpb_surface.writeToString(masterString)
     
     # Ring behind sample 
-    ring = GS.TubeVolume('ring_%d' % i, hole.rMax, 0.077, 0.4525) # XXX Smaller inner diameter to test if it exists!
+    ring = GS.TubeVolume('ring_%d' % i, hole.rMax, 0.077, 0.4525) 
     ring.material = 'acrylic_black'
     ring.mother = sample_mother.name 
     ring.rotation[0] = perf.rotation[0]
     y_ring, z_ring = trig_distances(hole.height/2.0 + ring.height/2.0 + 1e-6, 90 - ring.rotation[0])
     ring.center['x'] = hole.center['x']
-    ring.center['y'] = hole.center['y'] + y_tpb
-    ring.center['z'] = hole.center['z'] + z_tpb
+    ring.center['y'] = hole.center['y'] + y_ring
+    ring.center['z'] = hole.center['z'] + z_ring
     masterString = ring.writeToString(masterString) 
      
 

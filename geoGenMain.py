@@ -16,6 +16,8 @@ SAMPLE_NORMAL = 180.0 + SAMPLE_HOUSING_ANGLE
 # measure angles relative to sample normal
 PHOTODIODE_THETA = SAMPLE_NORMAL + float(sys.argv[2]) 
 TPB_THICKNESS = float(sys.argv[3]) # NOTE Micrometers!
+#PERFBOX_HOLE_INNER_SURFACE_LAYER_THICKNESS = 0.001 # Set to zero to disable. Diameter of hole is constant regardelss of this value.
+PERFBOX_HOLE_INNER_SURFACE_LAYER_THICKNESS = 0 # Set to zero to disable. Diameter of hole is constant regardelss of this value.
 
 # True if including all cylinders. False if only quartz.
 CYLINDER_FLAG = False 
@@ -269,7 +271,7 @@ if CYLINDER_FLAG:
 else: 
     sample_mother = cube
 
-perf = GS.HoledBox('sampleholder', 6.155, 1.25, 0.35, NUM_SAMPLE_HOLES, 0.5, 0.0)
+perf = GS.HoledBox('sampleholder', 6.155, 1.25, 0.35, NUM_SAMPLE_HOLES, 0.505 + PERFBOX_HOLE_INNER_SURFACE_LAYER_THICKNESS, 0.0)
 perf.material = 'aluminum'
 perf.mother = sample_mother.name
 perf.colorVect[3] = 0.3
@@ -298,8 +300,10 @@ masterString = perf.writeToString(masterString)
 print("Perf centre (%s, %s) at %s deg incidence" % (perf.center['y'], perf.center['z'], SAMPLE_HOUSING_ANGLE))
 
 
-sample_holder_border = GS.border('perfborder', perf.name, cube.name) 
-#masterString = sample_holder_border.writeToString(masterString); 
+sample_holder_border = GS.border('perfborder', cube.name, perf.name) 
+sample_holder_border.mother = cube.name
+sample_holder_border.surface = 'aluminum'
+masterString = sample_holder_border.writeToString(masterString)
 
 hole_locations = perf.x
 
@@ -316,8 +320,16 @@ for i in range(1, len(perf.x) + 1):
     if CYLINDER_FLAG:
         hole.rotation[1] = 90.0
         hole.center = {'x': 0.0, 'y': 0.0, 'z': perf_z - height}  
-        
     masterString = hole.writeToString(masterString)
+
+    if PERFBOX_HOLE_INNER_SURFACE_LAYER_THICKNESS > 0: # Inner surface of sample holder perforation
+        perfbox_hole_inner_surface = GS.TubeVolume('perf_inner_surface_%d' % i, 0.505 + PERFBOX_HOLE_INNER_SURFACE_LAYER_THICKNESS, perf.depth, 0.505)
+        perfbox_hole_inner_surface.material = 'aluminum'
+        perfbox_hole_inner_surface.mother = cube.name
+        perfbox_hole_inner_surface.rotation[0] = perf.rotation[0]
+        perfbox_hole_inner_surface.center = {'x': perf.center['x'] + height, 'y': perf.center['y'], 'z': perf.center['z']}
+        hole.colorVect[3] = 0.9
+        masterString = perfbox_hole_inner_surface.writeToString(masterString)
    
     print("Delta_Y - Expected_Delta_Y = %s" % ((perf.center['y'] - hole.center['y']) - 0.5*np.cos(np.pi*SAMPLE_HOUSING_ANGLE/180.0)*(0.35-sample_thickness))) 
     print("Delta_Z - Expected_Delta_Z = %s" % ((perf.center['z'] - hole.center['z']) - 0.5*np.sin(np.pi*SAMPLE_HOUSING_ANGLE/180.0)*(0.35-sample_thickness))) 

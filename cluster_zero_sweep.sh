@@ -25,15 +25,11 @@ while [ $s -le $s_max ]; do
     n=$n_min
     while [ $n -le $n_max ]
     do
-		#if [ $n -ne 85 ]; then
-		#	n=$[n+5]
-		#	continue
-		#fi
         srun -p debug python geoGenMain.py $s $n 1.0
-        srun -p debug python makePhotonMacro.py $s $n 400.0
-		echo ">>> Done $s $n"
-    	srun -p debug --comment="$@VUVSim_$s_$n" rat -o ./angle_sweep/angle_$s/no_cylinder_angle_$s.$n.root ./macros/photon_$s.$n.mac $@ >/dev/null 2>&1 &
-		n=$((n + 1))
+        srun -p debug python makePhotonMacro.py $s $n 400.0 10000 # wavelength (nm), n_photons
+    echo ">>> Done $s $n"
+    srun -p debug --comment="$@VUVSim_$s_$n" rat -o ./angle_sweep/angle_$s/no_cylinder_angle_$s.$n.root ./macros/photon_$s.$n.mac $@ >/dev/null 2>&1 &
+    n=$[n+1]
     done 
-	s=$((s + 1))
+s=$[s+1]
 done

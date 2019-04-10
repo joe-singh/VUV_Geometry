@@ -14,11 +14,13 @@
 # include <TCanvas.h>
 # include <math.h>
 # include <TMultiGraph.h>
+# include <TLegend.h>
 # include <TGraphErrors.h>
 # include <RAT/DS/Root.hh>
 # include <RAT/DS/MC.hh>
 # include <RAT/DS/MCTrack.hh>
 # include <RAT/DS/MCTrackStep.hh>
+# include <TSystem.h>
 
 const double PI = 3.14159265358979323846;
 
@@ -41,6 +43,10 @@ TVector3 getNormal(double angle) {
 
 double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile* diagnostic) {
   std::cout << fname << std::endl;
+  if (gSystem->AccessPathName(fname.c_str())) {
+    std::cout << "File " << fname << " does not exist, assuming 0 photons detected" << std::endl; 
+    return 0.0;
+  }
   TFile* file = new TFile(fname.c_str(), "READ");
   if (file->IsZombie()) {
     std::cout << "File " << fname << " is zombie, will skip it." << std::endl;
@@ -63,7 +69,7 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
   TH1F* downstreamAngle = new TH1F(downstreamName, "Downstream Angle", 100, -1.1, 1.1);
   TH2F* yzPositions = new TH2F(positionName, "Y-Z Positions", 100, -500, 500, 100, -100, 100); 
   TH1F* wavelength = new TH1F(wavelengthName, "Wavelength", 100, 0, 400); 
-
+  
   TVector3 hatX = TVector3(1.0,0,0);
   TVector3 hatY = TVector3(0,1.0,0);
   TVector3 hatZ = TVector3(0,0,1.0);
@@ -131,7 +137,8 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
   diagnostic->WriteTObject(upstreamAngle);
   diagnostic->WriteTObject(downstreamAngle); 
   diagnostic->WriteTObject(yzPositions);
-  diagnostic->WriteTObject(wavelength); 
+  diagnostic->WriteTObject(wavelength);
+  diagnostic->WriteTObject(zDist); 
   return double(numPhotodiode); 
 
 } 
@@ -143,7 +150,8 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 
   gROOT->SetBatch(kTRUE); 
   TFile* outf = new TFile("angular_sweeps.root", "RECREATE"); 
-  TMultiGraph* mg = new TMultiGraph(); 
+  TMultiGraph* mg = new TMultiGraph();
+  auto leg = new TLegend(0.1,0.7,0.2,0.9); 
   TFile* diagnosticAngle = new TFile("angularDiagnostics.root", "RECREATE");   
 
   for (int sampleAngle = sampleMin; sampleAngle < sampleMax + sampleDelta; sampleAngle += sampleDelta) {
@@ -177,6 +185,7 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
       errors.push_back(sqrt(photonCount));      
 
       hist->Fill(normalAngle, photonCount); 
+
     }
 
     double* normalArray = &normalAngles[0]; 
@@ -212,7 +221,7 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
   canv->BuildLegend();
   outf->WriteTObject(canv);
 
-  std::cout << "COMPLETE!" << std::endl;
+std::cout << "COMPLETE!" << std::endl;
 
 }
 

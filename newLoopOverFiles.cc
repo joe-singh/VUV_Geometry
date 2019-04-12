@@ -91,14 +91,13 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
 	int nentries = tr->GetEntries();
 	std::cout << "Num Entries: " << nentries << std::endl;
 
-	//for (int iEntry = 0; iEntry < nentries; iEntry++) {
-	for (int iEntry = 0; iEntry < 1000; iEntry++) {
+	for (int iEntry = 0; iEntry < nentries; iEntry++) {
 
 		if (iEntry % int(nentries/10) == 0) {
 			std::cout << "At entry " << iEntry << std::endl;
 		}
 
-		tr->GetEntry(iEntry); 
+		if (tr->GetEntry(iEntry) <= 0) continue; // read entry and if there is a problem where 0 or less is returned, skip this entry
 		RAT::DS::MC* rmc = rds->GetMC(); 
 		int numMCTracks = rmc->GetMCTrackCount(); 
 
@@ -172,10 +171,10 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 
 	unsigned int color = 1;
 	for (int sampleAngle = sampleMin; sampleAngle < sampleMax + sampleDelta; sampleAngle += sampleDelta) {
-		normalMin = sampleAngle - 5;
-		normalMax = sampleAngle + 5;
+		normalMin = sampleAngle - 10;
+		normalMax = sampleAngle + 10;
 		int numDataPoints = (normalMax - normalMin)/normalDelta + 1;
-		std::cout << numDataPoints << std::endl;
+		std::cout << "numDataPoints" << numDataPoints << std::endl;
 
 		std::vector<double> normalAngles; 
 		std::vector<double> intensities; 
@@ -183,7 +182,7 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 
 		char histname[1000];
 		sprintf(histname, "angularDist_%d", sampleAngle); 
-		TH1F* hist = new TH1F(histname, "Photon Angular Distribution;Angle From Normal / Degrees;Number of Photons", 500, normalMin, normalMax + normalDelta); 
+		TH1F* hist = new TH1F(histname, "Photon Angular Distribution;Angle From Normal / Degrees;Number of Photons", 500, normalMin, normalMax); 
 		hist->SetLineWidth(2); 
 		for (int normalAngle = normalMin; normalAngle < normalMax + normalDelta; normalAngle += normalDelta) {
 			char filename[1000];
@@ -303,12 +302,13 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 		outf->WriteTObject(peakHeightVsIncidenceAngle);
 		outf->WriteTObject(&canvas_1);
 		outf->Close();
+
+		delete peakHeightVsIncidenceAngle;
 	}
 
 	std::cout << "COMPLETE!" << std::endl;
 
 	delete outf;
-	delete peakHeightVsIncidenceAngle;
 	delete diagnosticAngle;
 }
 

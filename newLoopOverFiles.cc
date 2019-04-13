@@ -93,8 +93,7 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
 	int nentries = tr->GetEntries();
 	std::cout << "Num Entries: " << nentries << std::endl;
 
-	//for (int iEntry = 0; iEntry < nentries; iEntry++) { // FIX ME
-	for (int iEntry = 0; iEntry < 1000; iEntry++) {
+	for (int iEntry = 0; iEntry < nentries; iEntry++) { // FIX ME
 
 		if (iEntry % int(nentries/10) == 0) {
 			std::cout << "At entry " << iEntry << std::endl;

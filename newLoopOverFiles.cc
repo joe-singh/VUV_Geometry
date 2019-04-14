@@ -92,7 +92,7 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
 	std::cout << "Num Entries: " << nentries << std::endl;
 
 	//for (int iEntry = 0; iEntry < nentries; iEntry++) {
-	for (int iEntry = 0; iEntry < 1000; iEntry++) {
+	for (int iEntry = 0; iEntry < nentries; iEntry++) {
 
 		if (iEntry % int(nentries/10) == 0) {
 			std::cout << "At entry " << iEntry << std::endl;
@@ -172,8 +172,8 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 
 	unsigned int color = 1;
 	for (int sampleAngle = sampleMin; sampleAngle < sampleMax + sampleDelta; sampleAngle += sampleDelta) {
-		normalMin = sampleAngle - 5;
-		normalMax = sampleAngle + 5;
+		//normalMin = sampleAngle - 5;
+		//normalMax = sampleAngle + 5;
 		int numDataPoints = (normalMax - normalMin)/normalDelta + 1;
 		std::cout << numDataPoints << std::endl;
 
@@ -308,7 +308,7 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 	std::cout << "COMPLETE!" << std::endl;
 
 	delete outf;
-	delete peakHeightVsIncidenceAngle;
+	//delete peakHeightVsIncidenceAngle;
 	delete diagnosticAngle;
 }
 

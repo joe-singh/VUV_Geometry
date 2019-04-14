@@ -3,19 +3,37 @@ import numpy as np
 import sys
 
 masterString = ''
-file_name = './VUV_'+str(sys.argv[1])+'_'+str(sys.argv[2])+'_.geo'
+
+# Command Line Inputs
+SAMPLE_HOUSING_ANGLE = float(sys.argv[1]) 
+filepath=sys.argv[10] # File path to append after prep, of form config/syst/side/sign/angle_ 
+file_name = '/data/snoplus/home/joesingh/VUV/VUV_Geometry/macros/'+filepath+'/VUV_'+str(sys.argv[1])+'_'+str(sys.argv[2])+'_.geo'
+TPB_THICKNESS = float(sys.argv[3]) # NOTE Micrometers!
+CONFIG = sys.argv[4] # 'mirror' if mirror or 'tpb' if tpb 
+
+# NOTE THE BEAM PROPAGATES ALONG THE Y AXIS IN THE +VE DIRECTION
+ 
+# SYSTEMATICS, unless otherwise noted, put either 1, 0, -1 on these flags. For x = y +/- z 1 will use y + z, 0 will use y and -1 will use y - z
+
+# PMT Aperture
+APERTURE_SYSTEMATIC = int(sys.argv[5])
+# Aperture Distance from sample 
+PMT_DIST_SYSTEMATIC = int(sys.argv[6]) 
+# Sampleholder Reflectivity, 0 for no reflectivity otherwise reflectivity on. 
+REFLECTIVITY_SYSTEMATIC = int(sys.argv[7])
+# Laser/Sampleholder misalignment systematic NOTE put the actual offset value in here, not 1 0 -1. 
+LASER_AXIS_MISALIGNMENT = float(sys.argv[8]) 
+# Rotation axis misalignment
+ROTATION_AXIS_MISALIGNMENT = int(sys.argv[9]) 
 
 # NOTE For photodiode, theta = 0.0 puts it on the right side (y, z > 0). 
 # For samples, theta = 0.0 means TPB is facing the left side where the light comes 
 # in. Both rotations occur in the same direction though, there is just a 180 degree
 # offset
 
-# Command Line parameters
-SAMPLE_HOUSING_ANGLE = float(sys.argv[1])
 SAMPLE_NORMAL = 180.0 + SAMPLE_HOUSING_ANGLE
 # measure angles relative to sample normal
 PHOTODIODE_THETA = SAMPLE_NORMAL + float(sys.argv[2]) 
-TPB_THICKNESS = float(sys.argv[3]) # NOTE Micrometers!
 #PERFBOX_HOLE_INNER_SURFACE_LAYER_THICKNESS = 0.001 # Set to zero to disable. Diameter of hole is constant regardelss of this value.
 PERFBOX_HOLE_INNER_SURFACE_LAYER_THICKNESS = 0 # Set to zero to disable. Diameter of hole is constant regardelss of this value.
 
@@ -27,7 +45,7 @@ BASE_PLATE_HEIGHT = 0.75
 LIGHT_HOLE_HEIGHT_FROM_BOTTOM = 8.0
 LIGHT_HOLE_DIAMETER = 1.5
 PHOTODIODE_BOTTOM_ARM_THICKNESS = 0.5
-PHOTODIODE_DISTANCE_FROM_SAMPLE = 5.5
+PHOTODIODE_DISTANCE_FROM_SAMPLE = 5.5 + PMT_DIST_SYSTEMATIC * 0.125
 
 BEAM_FWHM = 0.1535 # inch
 BEAM_SIGMA = BEAM_FWHM/(2*np.sqrt(2*np.log(2)))
@@ -35,7 +53,7 @@ slit_width = 5*BEAM_SIGMA # 5 sigma when generating gaussian profile beam
 #slit_height = 5*BEAM_SIGMA # 5 sigma when generating gaussian profile beam
 #slit_width = BEAM_FWHM # FWHM with generating flat top beam with diameter FWHM
  
-PHOTODIODE_HEIGHT = 0.38
+PHOTODIODE_HEIGHT = 0.38 + APERTURE_SYSTEMATIC * 0.05 
 NUM_SAMPLE_HOLES = 4
 HOLE_IN_FRONT_OF_LIGHT = 2
 assert 0 < HOLE_IN_FRONT_OF_LIGHT <= NUM_SAMPLE_HOLES
@@ -276,10 +294,41 @@ perf.material = 'aluminum'
 perf.mother = sample_mother.name
 perf.colorVect[3] = 0.3
 
+sample_thickness = 0.35
 sample_disk_offset = 0.04
-sample_axis_shift = 0.35/2.0 - sample_disk_offset  #Accounting for the fact that the face is 0.04 inches behind the front face of the sample
+sample_axis_shift = sample_thickness/2.0 - sample_disk_offset  #Accounting for the fact that the face is 0.04 inches behind the front face of the sample
 
-if not CYLINDER_FLAG:
+if ROTATION_AXIS_MISALIGNMENT and False:
+    # Done under assumption that misaligned axis is towards photon source. If not, need to swap +/- signs later on.  
+
+    y_shift_mich = 0.06
+    z_shift_mich = -0.02
+   
+    # Mich's origin is at front face of sample and transverse origin is centre of laser beam. Shift variables accordingly. 
+    # Our coordinate system is at centre of mass of perf.  
+    sample_axis_shift_parallel_y =  y_shift_mich - sample_thickness/2.0 #Sign of this important, determines validity of assumption. 
+    sample_axis_shift_transverse_z = z_shift_mich - LASER_AXIS_MISALIGNMENT 
+    
+    phi = np.arctan(sample_axis_shift_transverse_z/sample_axis_shift_parallel_y) 
+    radius = np.sqrt(sample_axis_shift_transverse_z**2 + sample_axis_shift_parallel_y**2) 
+    #perf.rotation[0] = 90 - SAMPLE_HOUSING_ANGLE
+    perf.rotation[0] = 90-SAMPLE_HOUSING_ANGLE
+    perf_rot_radians = deg_to_rad(SAMPLE_HOUSING_ANGLE)
+   
+    z_trig_term =  radius * np.cos(perf_rot_radians + phi - np.pi/2.0)
+    y_trig_term = radius * np.sin(perf_rot_radians + phi - np.pi/2.0)
+
+    z_perf = sample_axis_shift_transverse_z + z_trig_term 
+    y_perf = sample_axis_shift_parallel_y - y_trig_term  # These +/- may need to be swapped! 
+    print("y_perf: %s = %s - %s" % (y_perf, sample_axis_shift_parallel_y, y_trig_term))
+    print("z_perf: %s = %s + %s" % (z_perf, sample_axis_shift_transverse_z, z_trig_term)) 
+    perf.center = {'x': light_hole.center['x'], 'y':sample_housing.center['y'] + y_perf,  'z': sample_housing.center['z'] + z_perf}
+        
+    height_offset = perf.center['x'] + perf.x[HOLE_IN_FRONT_OF_LIGHT - 1] - light_hole.center['x']
+    perf.center['x'] -= height_offset
+    hole_locations = perf.x
+
+elif not CYLINDER_FLAG:
     perf.rotation[0] = 90 - SAMPLE_HOUSING_ANGLE
     z_perf, y_perf = trig_distances(sample_axis_shift, perf.rotation[0])
     print("Yperf %s, Zperf %s" % (y_perf, z_perf))
@@ -289,7 +338,7 @@ if not CYLINDER_FLAG:
     perf.center['x'] -= height_offset
     hole_locations = perf.x
 
-if CYLINDER_FLAG:
+elif CYLINDER_FLAG:
     perf.rotation[1] = 90.0
     perf.center['z'] = -LAR.center['x'] + light_hole.center['x'] 
     height_offset = perf.center['z'] + perf.x[HOLE_IN_FRONT_OF_LIGHT - 1] - light_hole.center['x'] + LAR.center['x']
@@ -303,13 +352,15 @@ print("Perf centre (%s, %s) at %s deg incidence" % (perf.center['y'], perf.cente
 sample_holder_border = GS.border('perfborder', cube.name, perf.name) 
 sample_holder_border.mother = cube.name
 sample_holder_border.surface = 'aluminum'
-masterString = sample_holder_border.writeToString(masterString)
+
+if REFLECTIVITY_SYSTEMATIC:
+    masterString = sample_holder_border.writeToString(masterString)
 
 hole_locations = perf.x
 
 for i in range(1, len(perf.x) + 1):
     height = float(perf.x[i-1])
-    hole = GS.TubeVolume('hole_%d' % i, 0.5, sample_thickness, 0.0) # make sure thickness is correct here!
+    hole = GS.TubeVolume('hole_%d' % i, 0.5,sample_thickness, 0.0) # make sure thickness is correct here!
     hole.material = 'acrylic_suvt'
     hole.mother = sample_mother.name
     hole.colorVect[3] = 0.9
@@ -337,6 +388,7 @@ for i in range(1, len(perf.x) + 1):
     hole_border.mother = sample_mother
     #masterString = hole_border.writeToString(masterString) 
 
+    # TPB Surface
     tpb = GS.TubeVolume('tpb_%d' % i, hole.rMax, TPB_THICKNESS * 3.93701*10**(-5), 0.0)
     tpb.material = 'tpb' #'pmt_vacuum' 
     tpb.mother = sample_mother.name
@@ -348,17 +400,26 @@ for i in range(1, len(perf.x) + 1):
         tpb.center['x'] = hole.center['x']
         tpb.center['y'] = hole.center['y'] - y_tpb # hole.height/2.0 - tpb.height/2.0  #y_tpb
         tpb.center['z'] = hole.center['z'] - z_tpb 
-        #print("Tpb z: %f, tpb y: %f" % (z_tpb, y_tpb)) 
     else: 
         tpb.rotation[1] = 90.0
         tpb.center = {'y': 0.0, 'x': hole.height/2.0 + tpb.height/2.0 + 1e-6, 'z': hole.center['z']}
-    # masterString = tpb.writeToString(masterString)
 
     tpb_surface = GS.border('tpb_surface_%d' % i, sample_mother.name, tpb.name)
     tpb_surface.mother = sample_mother.name
     tpb_surface.surface = 'tpb_surface_border'
-    # masterString = tpb_surface.writeToString(masterString)
     
+        
+    # Calibration mirror
+    mirror_surface = GS.border('mirror_surface_%d' % i, sample_mother.name, hole.name)
+    mirror_surface.mother = sample_mother.name
+    mirror_surface.surface = 'mirror'
+ 
+    if CONFIG == 'tpb':
+        masterString = tpb.writeToString(masterString)
+        masterString = tpb_surface.writeToString(masterString)
+    elif CONFIG == 'mirror': 
+        masterString = mirror_surface.writeToString(masterString)
+
     # Ring behind sample 
     ring = GS.TubeVolume('ring_%d' % i, hole.rMax, 0.077, 0.4525) 
     ring.material = 'acrylic_black'
@@ -369,32 +430,14 @@ for i in range(1, len(perf.x) + 1):
     ring.center['y'] = hole.center['y'] + y_ring
     ring.center['z'] = hole.center['z'] + z_ring
     masterString = ring.writeToString(masterString) 
-     
 
-    mirror_surface = GS.border('mirror_surface_%d' % i, sample_mother.name, hole.name)
-    mirror_surface.mother = sample_mother.name
-    mirror_surface.surface = 'mirror'
-    masterString = mirror_surface.writeToString(masterString)
 
-    sample_test_hole = GS.TubeVolume("test%d" % i, hole.rMax, 0.05, 0.0)
-    sample_test_hole.material = 'pmt_vacuum'
-    sample_test_hole.mother = sample_mother
-    sample_test_hole.colorVect[3] = 1.0
-    sample_test_hole.rotation[0] = perf.rotation[0]
-    y_sample, z_sample = trig_distances(1e-6 + hole.height/2.0 + sample_test_hole.height/2.0, 90 - sample_test_hole.rotation[0])
-    #print("sampledisk z: %f, sampledisk y: %f" % (z_sample, y_sample)) 
-    sample_test_hole.center['x'] = hole.center['x']
-    sample_test_hole.center['y'] = hole.center['y'] + y_sample # 1e-6 + hole.height/2.0 + sample_test_hole.height/2.0 # y_sample
-    sample_test_hole.center['z'] = hole.center['z'] + z_sample
-    #masterString = sample_test_hole.writeToString(masterString)
-
-#slitGenPlane = GS.BoxVolume('slitGenPlane', slit_width, slit_height, 0.1)
 slitGenPlane = GS.TubeVolume('slitGenPlane', slit_width, 0.25, 0.0); 
 slitGenPlane.material = 'pmt_vacuum'
 slitGenPlane.mother = 'light_hole'
 slitGenPlane.colorVect[3] = 1.0
 slitGenPlane.center['x'] = 0.0
-slitGenPlane.center['y'] = 0.0
+slitGenPlane.center['y'] = LASER_AXIS_MISALIGNMENT
 masterString = slitGenPlane.writeToString(masterString)
 
 print("Lighthole: %f, Slit: %f, Sample: %f, Photodiode: %f" % (light_hole.center['x'], light_hole.center['x'] + slitGenPlane.center['x'], perf.center['x'] + perf.x[HOLE_IN_FRONT_OF_LIGHT - 1], photodiode.center['x'])) 

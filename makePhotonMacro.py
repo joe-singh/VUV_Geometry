@@ -10,17 +10,18 @@ def wavelengthToEnergy(wavelength):
 
 energy = wavelengthToEnergy(float(sys.argv[3]))
 
+filepath=sys.argv[5]
 n_photon = sys.argv[4]
 angle = sys.argv[2]
 sample_angle = sys.argv[1]
-fname = './macros/photon_'+str(int(float(sample_angle)))+'.'+str(int(float(angle)))+'.mac'
+fname = '/data/snoplus/home/joesingh/VUV/VUV_Geometry/macros/'+filepath+'/photon_'+str(int(float(sample_angle)))+'.'+str(int(float(angle)))+'.mac'
 f = open(fname, 'w')
 
 # [10.0d1, 10.0d1, 2.75d-3, 2.75d-3] = WLSABSLENGTH
 f.write('/glg4debug/glg4param omit_muon_processes  1.0\n')
 f.write('/glg4debug/glg4param omit_hadronic_processes  1.0\n')
 f.write('/rat/db/set OPTICS[tpb] WLSMEANNUMBERPHOTONS 0.9\n')
-f.write('/rat/db/set DETECTOR geo_file "./VUV_'+sample_angle+'_'+angle+'_.geo"\n')
+f.write('/rat/db/set DETECTOR geo_file "/data/snoplus/home/joesingh/VUV/VUV_Geometry/macros/'+filepath+'/VUV_'+sample_angle+'_'+angle+'_.geo"\n')
 f.write('/run/initialize\n')
 
 ### Visualization commands

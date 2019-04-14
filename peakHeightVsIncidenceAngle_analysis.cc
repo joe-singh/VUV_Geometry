@@ -87,7 +87,7 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
 	//std::cout << "Num Entries: " << nentries << std::endl;
 
 	//for (int iEntry = 0; iEntry < nentries; iEntry++) {
-	for (int iEntry = 0; iEntry < 10000; iEntry++) {
+	for (int iEntry = 0; iEntry < nentries; iEntry++) {
 
 		//if (iEntry % 1000 == 0) {
 		//	std::cout << "At entry " << iEntry << std::endl;
@@ -155,7 +155,8 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
 } 
 
 void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta, 
-				   int normalMin, int normalMax, int normalDelta) {
+				   int normalMin, int normalMax, int normalDelta,
+                                   std::string inputlocation, std::string outputlocation) {
 	TGraphErrors* peakHeightVsSampleAngle = NULL;
 	//TFile* fin = new TFile("peakHeightVsIncidenceAngle_plots.root", "Read"); // try retrieve graph from pre-existing file
 	//fin->GetObject("peakHeightVsSampleAngle", peakHeightVsSampleAngle);
@@ -173,8 +174,8 @@ void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 
 		for (int sampleAngle = sampleMin; sampleAngle < sampleMax + sampleDelta; sampleAngle += sampleDelta) {
       // temporary hack to prioritize speed
-      normalMin = sampleAngle - 5;
-      normalMax = sampleAngle + 5;
+      normalMin = sampleAngle - 10;
+      normalMax = sampleAngle + 10;
 
 			int numDataPoints = (normalMax - normalMin)/normalDelta + 1;
 			std::cout << "numDataPoints: " << numDataPoints << std::endl;
@@ -186,10 +187,15 @@ void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 			for (int normalAngle = normalMin; normalAngle < normalMax + normalDelta; normalAngle += normalDelta) {
 				char filename[1000];
 				//sprintf(filename, "./angle_sweep/angle_%d/no_cylinder_angle_%d.%d.root", sampleAngle, sampleAngle,normalAngle);
-				sprintf(filename, "/data/snoplus/home/joesingh/VUV/VUV_Geometry/angle_sweep/angle_%d/no_cylinder_angle_%d.%d.root", sampleAngle, sampleAngle,normalAngle);
+                                std::string sAngle = std::to_string(sampleAngle); 
+                                std::string nAngle = std::to_string(normalAngle); 
+  
+                                std::string filename_to_look_for = "angle_" + sAngle + "/no_cylinder_angle_" + nAngle + ".root";
+                                std::string fstring = inputlocation + filename_to_look_for; 
+				//sprintf(filename, "/data/snoplus/home/joesingh/VUV/VUV_Geometry/angle_sweep/angle_%d/no_cylinder_angle_%d.%d.root", sampleAngle, sampleAngle,normalAngle);
 				double photonCount = -1;
 				try {
-					photonCount = photonTracker(filename, normalAngle, sampleAngle, diagnosticAngle);
+					photonCount = photonTracker(fstring, normalAngle, sampleAngle, diagnosticAngle);
 				} catch (const std::exception& exc) {
 					std::cout << "Exception raised: " << exc.what() << std::endl;
 					TFile* file = dynamic_cast<TFile*>(gROOT->GetListOfFiles()->FindObject(filename)); // clean up zombie ROOT file that was created in photonTracker() method
@@ -271,7 +277,8 @@ void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
   canvas.Update();
 
 	// Save fitted function
-	TFile* outf = new TFile("peakHeightVsIncidenceAngle_result.root", "RECREATE"); 
+        std::string fname = outputlocation; //+ "TEST_NAME.root";
+	TFile* outf = new TFile(fname.c_str(), "RECREATE"); 
 	outf->WriteTObject(peakHeightVsSampleAngle);
 	outf->WriteTObject(&canvas);
 	outf->Close();
@@ -289,6 +296,8 @@ int main(int argc, char* argv[]) {
 	int normalmin = strToInt(argv[4]);
 	int normalmax = strToInt(argv[5]); 
 	int normaldelta = strToInt(argv[6]);  
-	loopOverFiles(samplemin, samplemax, sampledelta, normalmin, normalmax, normaldelta); 
+        std::string input_location = argv[7]; 
+        std::string output_location = argv[8];
+	loopOverFiles(samplemin, samplemax, sampledelta, normalmin, normalmax, normaldelta, input_location, output_location); 
 	return 0; 
 }

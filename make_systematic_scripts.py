@@ -82,11 +82,12 @@ def write_shell_script(isBack, low_angle, high_angle, systematic, configuration,
  
     f.write('        python '+absolute_path+'/makePhotonMacro.py $s $n ' + wavelength + ' ' + n_photon + ' ' + systematic_path+'/angle_$s\n')
     f.write('   echo ">>> Done $s $n"\n')
-    f.write('   sbatch -p debug --comment="$@VUVSim_$s_$n" '+absolute_path+'/ratbatch.sh -o ' + sweep_dir + '/angle_$s/no_cylinder_angle_$s_$n.root '+macro_dir+'/angle_$s/photon_$s.$n.mac $@ >/dev/null 2>&1 &\n')
+    f.write('   sbatch -p debug --wait --comment="$@VUVSim_$s_$n" '+absolute_path+'/ratbatch.sh -o ' + sweep_dir + '/angle_$s/no_cylinder_angle_$s_$n.root '+macro_dir+'/angle_$s/photon_$s.$n.mac $@ >/dev/null 2>&1 &\n')
     f.write('   n=$[n+1]\n')
     f.write('   done\n')
     f.write('s=$[s+1]\n')
-    f.write('done')
+    f.write('done\n')
+    f.write('wait')
          
 
 configs = ['mirror']

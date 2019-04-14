@@ -20,6 +20,59 @@ double* addGraphToMultiGraph(TFile* f, std::string fname, TMultiGraph* mg, int c
 }
 
 
+void getSystematicDifferences(std::vector<std::string> fnames, std::string title, bool isBack) {
+
+  TFile* default_config_file = new TFile(fnames[0].c_str(), "READ"); 
+  TFile* plus_config_file = new TFile(fnames[1].c_str(), "READ");
+  TFile* minus_config_file = new TFile(fnames[2].c_str(), "READ"); 
+ 
+  TGraphErrors* nominal = (TGraphErrors*) default_config_file->Get("peakHeightVsSampleAngle");
+  TGraphErrors* plus = (TGraphErrors*) plus_config_file->Get("peakHeightVsSampleAngle");
+  TGraphErrors* minus = (TGraphErrors*) minus_config_file->Get("peakHeightVsSampleAngle");
+  int n = nominal->GetN(); 
+  double* angles = nominal->GetX();    
+
+/*  TF1* f_nominal =  nominal->GetListOfFunctions()->FindObject("fitFunction"); 
+  TF1* f_plus = plus->GetListOfFunctions()->FindObject("fitFunction"); 
+  TF1* f_minus = minus->GetListOfFunctions()->FindObject("fitFunction");
+
+  std::cout << "Systematics for " << title << std::endl;
+  for (int i = 0; i < n; i++) {
+
+    double angle = angles[i];
+    double nom = f_nominal->Eval(angle); 
+    double high = f_plus->Eval(angle);   
+    double low = f_minus->Eval(angle);
+    
+    double plus_syst = abs(high - nom); 
+    double minus_syst = abs(nom - low);    
+ 
+    if (isBack) angle -= 180; 
+    
+    std::cout << "Angle: " << angle << ", Plus: " << plus_syst*100/nom << "\%, Minus: " << minus_syst*100/nom << "\% " << std::endl;
+
+  }
+  std::cout << std::endl; 
+  */
+
+  double* nominal_intensity = nominal->GetY(); 
+  double* plus_intensity = plus->GetY(); 
+  double* minus_intensity = minus->GetY(); 
+  
+  std::cout << "Systematics for " << title << std::endl;
+  for (int i = 0; i < n ; i++) {
+    
+    double angle = angles[i];
+    double plus_syst = abs(plus_intensity[i] - nominal_intensity[i]);
+    double minus_syst = abs(minus_intensity[i] - nominal_intensity[i]);
+    double nom = nominal_intensity[i];  
+    if (isBack) angle -= 180; 
+   
+    std::cout << "Angle: " << angle << ", Plus: " << plus_syst*100/nom << "\%, Minus: " << minus_syst*100/nom << "\% " << std::endl;
+  }
+  std::cout << std::endl;
+}
+
 
 TMultiGraph* makeDropoffPlotMain(std::vector<std::string> fnames, std::string title) {
 
@@ -38,7 +91,7 @@ TMultiGraph* makeDropoffPlotMain(std::vector<std::string> fnames, std::string ti
   } 
   
   mg->SetTitle(title.c_str());
-  mg->Draw("ACP");
+  mg->Draw("AP");
   mg->GetXaxis()->SetTitle("Incidence Angle / degrees"); 
   mg->GetYaxis()->SetTitle("Number of Photons"); 
   c->Modified();
@@ -60,8 +113,8 @@ double* normalise(double* array,  const int len) {
  return normalised;
 }
 
-void makeDropoffPlot() {
-
+void makeDropoffPlot(bool isBack) {
+/*
   std::vector<std::string> sampleholder_thickness;
   sampleholder_thickness.push_back("dropoff_problem/sweep_al_sampleholder.root"); 
   sampleholder_thickness.push_back("dropoff_problem/sweep_thickness_0.315.root"); 
@@ -84,28 +137,32 @@ void makeDropoffPlot() {
   mirror_shift.push_back("dropoff_problem/mirror_shift_0.08.root"); 
   mirror_shift.push_back("dropoff_problem/mirror_shift_0.12.root");
   makeDropoffPlotMain(mirror_shift, "Varying Mirror Position (default = 0.04)"); 
+*/
+  std::vector<std::string> aperture_width;
+  aperture_width.push_back("peak_analysis_mirror_aperture_back_nominal.root"); 
+  aperture_width.push_back("peak_analysis_mirror_aperture_back_plus.root"); 
+  aperture_width.push_back("peak_analysis_mirror_aperture_back_minus.root");
+  makeDropoffPlotMain(aperture_width, "Aperture Width Systematic"); 
+  getSystematicDifferences(aperture_width, "Aperture Width", isBack); 
+  
+/*  std::vector<std::string> pmt_distance;
+  pmt_distance.push_back("systematic_mirror/default.root"); 
+  pmt_distance.push_back("systematic_mirror/distance_plus.root"); 
+  pmt_distance.push_back("systematic_mirror/distance_minus.root"); 
+  makeDropoffPlotMain(pmt_distance, "PMT Distance Systematic");
+  getSystematicDifferences(pmt_distance, "PMT Distance", isBack); 
 
+  std::vector<std::string> reflection;
+  reflection.push_back("systematic_mirror/default.root"); 
+  reflection.push_back("systematic_mirror/no_reflection.root"); 
+  reflection.push_back("systematic_mirror/no_reflection.root"); 
+  makeDropoffPlotMain(reflection,"Sample Holder Reflection Systematic"); 
+  getSystematicDifferences(reflection, "Sample Holder Reflection", isBack); 
 
-  double angles[15] = {15.0, 25.0, 39.0, 41.0, 45.0, 46.0, 48.0, 49.0, 54.0, 53.0, 57.0, 54.0, 57.0, 60.0, 63.0};
-  double rates[15] = {228099.963163, 227136.641226, 231651.301358, 235690.28072, 233832.978309, 229868.805668, 208936.824357, 183473.15137, 132243.030543, 121204.836469, 40230.21131, 23463.665956, 27536.63494, 28064.915391, 27562.349646};
-  
-  
-  double normal_rates[15] = {0.0};
-  for (int i = 0; i < sizeof(angles)/sizeof(angles[0]); i++) {
-
-   normal_rates[i] = 10000*double(rates[i])/double(rates[0]);
-   std::cout <<normal_rates[i] << std::endl;
-  }
-  
-  TGraphErrors* data = new TGraphErrors(15, angles, normal_rates);
-  data->SetTitle("Data"); 
-  data->SetMarkerStyle(8);
-  data->SetLineColor(kRed); 
-  data->SetMarkerColor(kRed); 
-  std::vector<std::string> data_mc_comparison;
-  data_mc_comparison.push_back("dropoff_problem/sweep_al_sampleholder.root");
-  TMultiGraph* mg = makeDropoffPlotMain(data_mc_comparison, "Data MC Comparison"); 
-  mg->Add(data); 
-  mg->Draw("AP");
-  
+  std::vector<std::string> wavelength;
+  wavelength.push_back("systematic_mirror/default.root"); 
+  wavelength.push_back("systematic_mirror/wavelength_plus.root"); 
+  wavelength.push_back("systematic_mirror/wavelength_minus.root"); 
+  makeDropoffPlotMain(wavelength,"Wavelength Systematic"); 
+  getSystematicDifferences(wavelength, "Wavelength", isBack);*/ 
 }

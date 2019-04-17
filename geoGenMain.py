@@ -294,13 +294,14 @@ perf.material = 'aluminum'
 perf.mother = sample_mother.name
 perf.colorVect[3] = 0.3
 
-sample_thickness = 0.35
+sampleholder_thickness = 0.35
 sample_disk_offset = 0.04
-sample_axis_shift = sample_thickness/2.0 - sample_disk_offset  #Accounting for the fact that the face is 0.04 inches behind the front face of the sample
+sample_axis_shift = sampleholder_thickness/2.0 - sample_disk_offset  #Accounting for the fact that the face is 0.04 inches behind the front face of the sample
 
-if ROTATION_AXIS_MISALIGNMENT and False:
+
+print("ROTATION_AXIS_MISALIGNMENT %s" % ROTATION_AXIS_MISALIGNMENT)
+if ROTATION_AXIS_MISALIGNMENT:
     # Done under assumption that misaligned axis is towards photon source. If not, need to swap +/- signs later on.  
-
     y_shift_mich = 0.06
     z_shift_mich = -0.02
    
@@ -328,11 +329,13 @@ if ROTATION_AXIS_MISALIGNMENT and False:
     perf.center['x'] -= height_offset
     hole_locations = perf.x
 
-elif not CYLINDER_FLAG:
+if not CYLINDER_FLAG:
     perf.rotation[0] = 90 - SAMPLE_HOUSING_ANGLE
     z_perf, y_perf = trig_distances(sample_axis_shift, perf.rotation[0])
     print("Yperf %s, Zperf %s" % (y_perf, z_perf))
     perf.center = {'x': light_hole.center['x'], 'y': sample_housing.center['y'] + y_perf,  'z': sample_housing.center['z'] + z_perf}
+    if LASER_AXIS_MISALIGNMENT:
+        perf.center = {'x': light_hole.center['x'], 'y': sample_housing.center['y'] + y_perf,  'z': sample_housing.center['z'] + z_perf + LASER_AXIS_MISALIGNMENT}
     print("PERF CENTER - SHIFT: %s" % (perf.center['y'] - y_perf))
     height_offset = perf.center['x'] + perf.x[HOLE_IN_FRONT_OF_LIGHT - 1] - light_hole.center['x']
     perf.center['x'] -= height_offset
@@ -382,8 +385,6 @@ for i in range(1, len(perf.x) + 1):
         hole.colorVect[3] = 0.9
         masterString = perfbox_hole_inner_surface.writeToString(masterString)
    
-    print("Delta_Y - Expected_Delta_Y = %s" % ((perf.center['y'] - hole.center['y']) - 0.5*np.cos(np.pi*SAMPLE_HOUSING_ANGLE/180.0)*(0.35-sample_thickness))) 
-    print("Delta_Z - Expected_Delta_Z = %s" % ((perf.center['z'] - hole.center['z']) - 0.5*np.sin(np.pi*SAMPLE_HOUSING_ANGLE/180.0)*(0.35-sample_thickness))) 
     hole_border = GS.border('hole_border_%d' % i, perf.name, hole.name) 
     hole_border.mother = sample_mother
     #masterString = hole_border.writeToString(masterString) 
@@ -437,7 +438,7 @@ slitGenPlane.material = 'pmt_vacuum'
 slitGenPlane.mother = 'light_hole'
 slitGenPlane.colorVect[3] = 1.0
 slitGenPlane.center['x'] = 0.0
-slitGenPlane.center['y'] = LASER_AXIS_MISALIGNMENT
+slitGenPlane.center['y'] = 0.0 #LASER_AXIS_MISALIGNMENT
 masterString = slitGenPlane.writeToString(masterString)
 
 print("Lighthole: %f, Slit: %f, Sample: %f, Photodiode: %f" % (light_hole.center['x'], light_hole.center['x'] + slitGenPlane.center['x'], perf.center['x'] + perf.x[HOLE_IN_FRONT_OF_LIGHT - 1], photodiode.center['x'])) 

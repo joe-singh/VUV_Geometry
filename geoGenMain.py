@@ -6,7 +6,7 @@ masterString = ''
 
 # Command Line Inputs
 SAMPLE_HOUSING_ANGLE = float(sys.argv[1]) 
-filepath=sys.argv[10] # File path to append after prep, of form config/syst/side/sign/angle_ 
+filepath=sys.argv[12] # File path to append after prep, of form config/syst/side/sign/angle_ 
 file_name = '/data/snoplus/home/joesingh/VUV/VUV_Geometry/macros/'+filepath+'/VUV_'+str(sys.argv[1])+'_'+str(sys.argv[2])+'_.geo'
 TPB_THICKNESS = float(sys.argv[3]) # NOTE Micrometers!
 CONFIG = sys.argv[4] # 'mirror' if mirror or 'tpb' if tpb 
@@ -23,8 +23,12 @@ PMT_DIST_SYSTEMATIC = int(sys.argv[6])
 REFLECTIVITY_SYSTEMATIC = int(sys.argv[7])
 # Laser/Sampleholder misalignment systematic NOTE put the actual offset value in here, not 1 0 -1. 
 LASER_AXIS_MISALIGNMENT = float(sys.argv[8]) 
-# Rotation axis misalignment
+# Sample Rotation axis misalignment
 ROTATION_AXIS_MISALIGNMENT = int(sys.argv[9]) 
+# PMT Axis Rotation misalignment parallel to beam
+PMT_MISALIGNMENT_PARALLEL = int(sys.argv[10])
+# PMT Axis Rotation misalignment transverse to beam
+PMT_MISALIGNMENT_TRANSVERSE = int(sys.argv[11]) 
 
 # NOTE For photodiode, theta = 0.0 puts it on the right side (y, z > 0). 
 # For samples, theta = 0.0 means TPB is facing the left side where the light comes 
@@ -215,7 +219,15 @@ bottom_arm.mother = 'cube'
 bottom_arm.colorVect[3] = 0.5
 THETA_RAD = deg_to_rad(PHOTODIODE_THETA)
 y_arm_offset, z_arm_offset = trig_distances(bottom_arm.width/2, PHOTODIODE_THETA)
-bottom_arm.center = {'x': cube_negative_x + BASE_PLATE_HEIGHT + bottom_arm.height/2.0, 'y': sample_housing.center['y'] + y_arm_offset, 'z': sample_housing.center['z'] + z_arm_offset}
+
+# Photiodiode Axis Shift Systematic:
+
+y_bottom = 0.0 + PMT_MISALIGNMENT_PARALLEL * 0.25 + (bottom_arm.width/2)*np.cos(deg_to_rad(PHOTODIODE_THETA))
+z_bottom = 0.0 + PMT_MISALIGNMENT_TRANSVERSE * 0.25 + (bottom_arm.width/2)*np.sin(deg_to_rad(PHOTODIODE_THETA))
+
+#bottom_arm.center = {'x': cube_negative_x + BASE_PLATE_HEIGHT + bottom_arm.height/2.0, 'y': sample_housing.center['y'] + y_arm_offset, 'z': sample_housing.center['z'] + z_arm_offset}
+bottom_arm.center = {'x': cube_negative_x + BASE_PLATE_HEIGHT + bottom_arm.height/2.0, 'y': sample_housing.center['y']+ y_bottom, 'z': sample_housing.center['z'] + z_bottom}
+
 bottom_arm.rotation[0] = -PHOTODIODE_THETA
 masterString = bottom_arm.writeToString(masterString) 
 

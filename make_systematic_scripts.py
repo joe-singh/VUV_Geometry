@@ -21,6 +21,11 @@ def write_shell_script(isBack, low_angle, high_angle, systematic, configuration,
        dirstr = "minus"
     else:
        dirstr = "nominal" 
+   
+    if systematic == 'laser_axis' and direction == 0:
+        dirstr = "nominal"
+    elif systematic == 'laser_axis':
+        dirstr = "plus"
 
     if configuration == 'mirror':
         n_photon = '10000'
@@ -68,17 +73,21 @@ def write_shell_script(isBack, low_angle, high_angle, systematic, configuration,
     f.write('    do\n')
 
     if systematic == 'aperture': 
-        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" ' + str(direction) + ' 0 0 0 0 '+systematic_path+'/angle_$s\n') 
+        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" ' + str(direction) + ' 0 0 0 0 0 0 '+systematic_path+'/angle_$s\n') 
     elif systematic == 'distance': 
-        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 ' + str(direction) + ' 0 0 0 '+systematic_path+'/angle_$s\n')
+        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 ' + str(direction) + ' 0 0 0 0 0 '+systematic_path+'/angle_$s\n')
     elif systematic == 'reflection':
-        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 1 0 0 '+systematic_path+'/angle_$s\n')
+        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 1 0 0 0 0 '+systematic_path+'/angle_$s\n')
     elif systematic == 'laser_axis':
-        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 0 0.2 0 '+systematic_path+'/angle_$s\n')
+        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 0 '+ str(direction) +' 0 0 0 '+systematic_path+'/angle_$s\n')
     elif systematic == 'rotation_axis':
-        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 0 0.2 1 '+systematic_path+'/angle_$s\n')
+        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 0 0.0 '+ str(direction)+' 0 0 '+systematic_path+'/angle_$s\n')
     elif systematic == 'default':
-        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 0 0 0 '+systematic_path+'/angle_$s\n')
+        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 0 0 0 0 0 '+systematic_path+'/angle_$s\n')
+    elif systematic == 'pmt_x': 
+        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 0 0 0 ' + str(direction) + ' 0 '+systematic_path+'/angle_$s\n')
+    elif systematic == 'pmt_y':
+        f.write('        python '+absolute_path+'/geoGenMain.py $s $n 1.0 "' + configuration + '" 0 0 0 0 0 0 ' + str(direction) + ' ' +systematic_path+'/angle_$s\n')
  
     f.write('        python '+absolute_path+'/makePhotonMacro.py $s $n ' + wavelength + ' ' + n_photon + ' ' + systematic_path+'/angle_$s\n')
     f.write('   echo ">>> Done $s $n"\n')
@@ -98,12 +107,15 @@ for config in configs:
     for isBack in back_checks:
         low = 10; high = 80
         if isBack:
-            low = 215; high = 220
-        if systematic == 'aperture' or systematic == 'distance':
+            low = 200; high = 250
+        if systematic == 'aperture' or systematic == 'distance' or systematic == 'pmt_x' or systematic == 'pmt_y':
             for direction in range(-1, 2, 1): 
                 write_shell_script(isBack, low, high, systematic, config, direction)
+        elif systematic == 'laser_axis':
+            write_shell_script(isBack, low, high, systematic, config, 0) # Default
+            write_shell_script(isBack, low, high, systematic, config, 0.02) # Systematic on, displacement of laser beam 
         else:
             write_shell_script(isBack, low, high, systematic, config, 0) # Default
-            write_shell_script(isBack, low, high, systematic, config, 1) # Systematic on
+            write_shell_script(isBack, low, high, systematic, config, 1) # Systematic on, 
        
 

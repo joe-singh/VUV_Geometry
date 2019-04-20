@@ -1,6 +1,5 @@
 # include <iostream>
 # include <sstream>
-# include <algorithm>
 # include <math.h>
 # include <vector>
 # include <algorithm>
@@ -52,10 +51,10 @@ TVector3 getNormal(double angle) {
 double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile* diagnostic) {
 	//std::cout << fname << std::endl;
 	TFile* file = new TFile(fname.c_str(), "READ");
-  if (file->IsZombie()) {
-    std::cout << "File " << fname << " is zombie, will skip it." << std::endl;
-    throw std::bad_alloc();
-  }
+	if (file->IsZombie()) {
+		std::cout << "File " << fname << " is zombie, will skip it." << std::endl;
+		throw std::bad_alloc();
+	}
 	TTree* tr = (TTree*) file->Get("T");
 
 	RAT::DS::Root* rds = new RAT::DS::Root();
@@ -136,7 +135,7 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
 
 		}
 	}
-  delete rds;
+	delete rds;
 
 	//std::cout << "UPSTREAM NUMBER FOR ANGLE " << normalAngle << " " << numCube << std::endl;
 	//std::cout << "NUMBER FOR ANGLE " << normalAngle << " " << numPhotodiode << std::endl;
@@ -145,10 +144,10 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
 	diagnostic->WriteTObject(yzPositions);
 	diagnostic->WriteTObject(wavelength); 
 
-  delete upstreamAngle;
-  delete downstreamAngle;
-  delete yzPositions;
-  delete wavelength;
+	delete upstreamAngle;
+	delete downstreamAngle;
+	delete yzPositions;
+	delete wavelength;
 
 	return double(numPhotodiode); 
 
@@ -158,12 +157,6 @@ void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 				   int normalMin, int normalMax, int normalDelta,
                                    std::string inputlocation, std::string outputlocation) {
 	TGraphErrors* peakHeightVsSampleAngle = NULL;
-	//TFile* fin = new TFile("peakHeightVsIncidenceAngle_plots.root", "Read"); // try retrieve graph from pre-existing file
-	//fin->GetObject("peakHeightVsSampleAngle", peakHeightVsSampleAngle);
-	////std::cout << "peakHeightVsSampleAngle" << peakHeightVsSampleAngle << ";" << std::endl;
-	//fin->Close();
-	//delete fin;
-
 	if (!peakHeightVsSampleAngle) { // if graph does not exist, create it
 		gROOT->SetBatch(kTRUE); 
 		TFile* diagnosticAngle = new TFile("peakHeightVsIncidenceAngle_angularDiagnostics.root", "RECREATE");   
@@ -173,9 +166,9 @@ void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 		std::vector<double> sampleAngles;
 
 		for (int sampleAngle = sampleMin; sampleAngle < sampleMax + sampleDelta; sampleAngle += sampleDelta) {
-      // temporary hack to prioritize speed
-      normalMin = sampleAngle - 10;
-      normalMax = sampleAngle + 10;
+			// temporary hack to prioritize speed
+			normalMin = sampleAngle - 10;
+			normalMax = sampleAngle + 10;
 
 			int numDataPoints = (normalMax - normalMin)/normalDelta + 1;
 			std::cout << "numDataPoints: " << numDataPoints << std::endl;
@@ -207,9 +200,9 @@ void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 				intensities.push_back(photonCount); 
 			}
 
-      const double& maxIntensity = *std::max_element(intensities.begin(), intensities.end());
+			const double& maxIntensity = *std::max_element(intensities.begin(), intensities.end());
 			intensityPeakHeights.push_back(maxIntensity);
-      intensityPeakHeights_err.push_back(sqrt(maxIntensity));
+			intensityPeakHeights_err.push_back(sqrt(maxIntensity));
 			sampleAngles.push_back(sampleAngle);
 		} 
 
@@ -226,7 +219,7 @@ void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 		//peakHeightVsSampleAngle->Draw("A:L:P");
 		//gPad->SaveAs("peakHeightVsIncidenceAngle_plots.root");
 
-    delete diagnosticAngle;
+		delete diagnosticAngle;
 	}
 
 	//TF1 fitFunction("fitFunction", &sigmoid, sampleMin, sampleMax, 3);
@@ -273,8 +266,8 @@ void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 	TLine threshold_vertical(x_threshold, peakHeightVsSampleAngle->GetYaxis()->GetXmin(), x_threshold, y_threshold);
 	threshold_vertical.SetLineStyle(2);
 	threshold_vertical.Draw("Same");
-  canvas.Modified();
-  canvas.Update();
+	canvas.Modified();
+	canvas.Update();
 
 	// Save fitted function
         std::string fname = outputlocation; //+ "TEST_NAME.root";
@@ -286,7 +279,7 @@ void loopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 
 	std::cout << "COMPLETE!" << std::endl;
 
-  delete peakHeightVsSampleAngle;
+	delete peakHeightVsSampleAngle;
 }
 
 int main(int argc, char* argv[]) {

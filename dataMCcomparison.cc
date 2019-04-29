@@ -137,10 +137,10 @@ std::vector<double> getFitLimits(TGraph* gr, TF1* f, double mean, double sigma) 
   double upper_bound; 
   double reduced_chisq = 1e12; 
 
-  for (double i = 2.5; i > 0.0; i-=0.01 ) { 
- 
-    double lower = mean - i*sigma; 
-    double upper = mean + i*sigma;
+  for (int i = 250; i > 0; i-=1 ) { 
+    const double j = 0.01 * i;
+    double lower = mean - j*sigma; 
+    double upper = mean + j*sigma;
     gr->Fit(f, "RMQ","", lower, upper); 
     double chisq = gr->Chisquare(f); 
     double ndf = f->GetNDF(); 

@@ -18,17 +18,17 @@ RAT to make the geometry. Run as follows:
 
 $ geoGenMain.py sample_angle pmt_angle tpb_thickness config aperture distance reflectivity laser_axis rotation_axis pmt_parallel pmt_transverse 
 
-*sample_angle - numerical: the angle at which the sample is turned (dictates angle of incidence)
-*pmt_angle - numerical: the angle of the pmt
-*tpb_thickness - numerical: thickness of tpb layer, no effect if config is mirror
-*config - string: "tpb" if tpb simulation, "mirror" if mirror calibration simulation
-*aperture - numerical: flag to indicate aperture systematic, ±1 for ±1stdev and 0 for no effect
-*distance - numerical: flag to indicate pmt distance systematic, ±1 for ±1stdev and 0 for no effect
-*reflectivity - numerical: flag to indicate reflectivity systematic, 1 for on and 0 for no effect
-*laser_axis - numerical: flag to indicate laser misalignment systematic, 1 for on and 0 for no effect
-*rotation_axis - numerical: flag to indicate sample holder rotation misalignment, 1 for on and 0 for no effect
-*pmt_parallel - numerical: flag to indicate misalignment of pmt rotation parallel to beam, 1 for on and 0 for no effect
-*pmt_transverse - numerical: flag to indicate misalignment of pmt rotation transverse to beam, 1 for on and 0 for no effect
+* sample_angle - numerical: the angle at which the sample is turned (dictates angle of incidence)
+* pmt_angle - numerical: the angle of the pmt
+* tpb_thickness - numerical: thickness of tpb layer, no effect if config is mirror
+* config - string: "tpb" if tpb simulation, "mirror" if mirror calibration simulation
+* aperture - numerical: flag to indicate aperture systematic, ±1 for ±1stdev and 0 for no effect
+* distance - numerical: flag to indicate pmt distance systematic, ±1 for ±1stdev and 0 for no effect
+* reflectivity - numerical: flag to indicate reflectivity systematic, 1 for on and 0 for no effect
+* laser_axis - numerical: flag to indicate laser misalignment systematic, 1 for on and 0 for no effect
+* rotation_axis - numerical: flag to indicate sample holder rotation misalignment, 1 for on and 0 for no effect
+* pmt_parallel - numerical: flag to indicate misalignment of pmt rotation parallel to beam, 1 for on and 0 for no effect
+* pmt_transverse - numerical: flag to indicate misalignment of pmt rotation transverse to beam, 1 for on and 0 for no effect
 
 output: .geo file used by RAT.
 

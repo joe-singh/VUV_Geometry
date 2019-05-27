@@ -312,7 +312,7 @@ if SAMPLE_HOLDER_FLAG:
     perf.colorVect[3] = 0.3
 
     sampleholder_thickness = 0.35
-    sample_disk_offset = 0.04
+    sample_disk_offset = 0.04 
     sample_axis_shift = sampleholder_thickness/2.0 - sample_disk_offset  #Accounting for the fact that the face is 0.04 inches behind the front face of the sample
 
 

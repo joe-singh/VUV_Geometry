@@ -39,12 +39,20 @@ double linear(double *x, double *params) {
 	return params[0]*x[0] + params[1];
 }
 
-int strToInt(char* ch) {
+double strToDbl(char* ch) {
 	std::stringstream ss;
 	ss << ch; 
-	int num;
+	double num;
 	ss >> num; 
 	return num; 
+}
+
+bool strToBool(char* ch) {
+    std::stringstream is;
+    is << ch;
+    bool b;
+    is >> std::boolalpha >> b;
+    return b;
 }
 
 TVector3 getNormal(double angle) {
@@ -56,7 +64,7 @@ TVector3 getNormal(double angle) {
 	return TVector3(x, y, z); 
 }
 
-double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile* diagnostic) {
+double photonTracker(std::string fname, double normalAngle, double sampleAngle, TFile* diagnostic) {
 	std::cout << fname << std::endl;
 	TFile* file = new TFile(fname.c_str(), "READ");
 	if (file->IsZombie()) {
@@ -69,13 +77,13 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
 	tr->SetBranchAddress("ds", &rds);
 
 	char upstreamName[1000];
-	sprintf(upstreamName, "upstreamAngle_%d_%d", sampleAngle, normalAngle);
+	sprintf(upstreamName, "upstreamAngle_%.1f_%.1f", sampleAngle, normalAngle);
 	char downstreamName[1000];
-	sprintf(downstreamName, "downstreamAngle_%d_%d", sampleAngle, normalAngle);
+	sprintf(downstreamName, "downstreamAngle_%.1f_%.1f", sampleAngle, normalAngle);
 	char positionName[1000];
-	sprintf(positionName, "photonPosition_%d_%d", sampleAngle, normalAngle);
+	sprintf(positionName, "photonPosition_%.1f_%.1f", sampleAngle, normalAngle);
 	char wavelengthName[1000];
-	sprintf(wavelengthName, "photonWavelength_%d_%d", sampleAngle, normalAngle);
+	sprintf(wavelengthName, "photonWavelength_%.1f_%.1f", sampleAngle, normalAngle);
 	TH1F* upstreamAngle = new TH1F(upstreamName, "Upstream Angle", 100, -1.1, 1.1);
 	TH1F* downstreamAngle = new TH1F(downstreamName, "Downstream Angle", 100, -1.1, 1.1);
 	TH2F* yzPositions = new TH2F(positionName, "Y-Z Positions", 100, -500, 500, 100, -100, 100); 
@@ -159,11 +167,11 @@ double photonTracker(std::string fname, int normalAngle, int sampleAngle, TFile*
 	return double(numPhotodiode); 
 } 
 
-void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta, 
-					  int normalMin, int normalMax, int normalDelta) {
+void newLoopOverFiles(double sampleMin, double sampleMax, double sampleDelta, 
+					  double normalMin, double normalMax, double normalDelta, bool actualRun) {
 
 	gROOT->SetBatch(kTRUE); 
-	TFile* outf = new TFile("angular_sweeps.root", "RECREATE"); 
+	TFile* outf = new TFile("tpb_sqe_minus.root", "RECREATE"); 
 	TMultiGraph* mg = new TMultiGraph(); 
 	TFile* diagnosticAngle = new TFile("angularDiagnostics.root", "RECREATE");   
 
@@ -171,12 +179,33 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 	std::vector<double> intensityPeakHeights_err;
 	std::vector<double> reflectedPeakAngles;
 	std::vector<double> nominalIncidenceAngles;
-
+         
+        double loopStart = sampleMin;
+        double loopEnd = sampleMax + sampleDelta;
+        double loopStep = sampleDelta;
+        
+        double incident_angles[] = {196.5, 205.7, 220.0, 226.1, 224.3, 225.5, 229.0, 229.7, 233.1, 233.7, 236.7, 233.9, 237.2, 239.0, 242.9};  
+        if (actualRun) {
+          std::cout << "VARIABLES CHANGED\n"; 
+          loopStart = 0.0; 
+          loopEnd = 15.0;
+          loopStep = 1.0;
+        }
 	unsigned int color = 1;
-	for (int sampleAngle = sampleMin; sampleAngle < sampleMax + sampleDelta; sampleAngle += sampleDelta) {
-		normalMin = sampleAngle - 10;
-		normalMax = sampleAngle + 10;
-		int numDataPoints = (normalMax - normalMin)/normalDelta + 1;
+	for (double index = loopStart; index < loopEnd; index += loopStep) {
+                double sampleAngle; 
+                if (actualRun){ 
+                  int i = index;
+                  sampleAngle = incident_angles[i];
+                } else {
+                  sampleAngle = index;
+                }
+                // For Mirror Reflectivity Tests
+		//normalMin = sampleAngle - 10;
+		//normalMax = sampleAngle + 10;
+		
+                // For TPB reemission
+                int numDataPoints = (normalMax - normalMin)/normalDelta + 1;
 		std::cout << "numDataPoints" << numDataPoints << std::endl;
 
 		std::vector<double> normalAngles; 
@@ -184,12 +213,12 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 		std::vector<double> errors; 
 
 		char histname[1000];
-		sprintf(histname, "angularDist_%d", sampleAngle); 
+		sprintf(histname, "angularDist_%.1f", sampleAngle); 
 		TH1F* hist = new TH1F(histname, "Photon Angular Distribution;Angle From Normal / Degrees;Number of Photons", 500, normalMin, normalMax); 
 		hist->SetLineWidth(2); 
-		for (int normalAngle = normalMin; normalAngle < normalMax + normalDelta; normalAngle += normalDelta) {
+		for (double normalAngle = normalMin; normalAngle < normalMax + normalDelta; normalAngle += normalDelta) {
 			char filename[1000];
-			sprintf(filename, "./angle_sweep/angle_%d/no_cylinder_angle_%d.%d.root", sampleAngle, sampleAngle,normalAngle);
+			sprintf(filename, "./MC_tpb/sqe_minus/angle_%.1f/no_cylinder_angle_%.1f.root", sampleAngle,normalAngle);
 			double photonCount = -1; // initialize to nonsense value
 			try {
 				photonCount = photonTracker(filename, normalAngle, sampleAngle, diagnosticAngle);
@@ -239,10 +268,12 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 		gr->SetFillStyle(0);
 		gr->GetXaxis()->SetTitle("Angle from Normal / degrees");
 		gr->GetYaxis()->SetTitle("Number Of Photons");
-
+                char grname[80]; 
+                sprintf(grname, "tgraph_%.1f", sampleAngle);
+                gr->SetName(grname); 
 		gr->SetTitle(histname); 
-		gr->SetName(histname);  
-		//outf->WriteTObject(gr); 
+		outf->WriteTObject(gr);
+                hist->Fit("gaus");  
 		outf->WriteTObject(hist); 
 		mg->Add(gr); 
 
@@ -382,12 +413,13 @@ void newLoopOverFiles(int sampleMin, int sampleMax, int sampleDelta,
 }
 
 int main(int argc, char* argv[]) {
-	int samplemin = strToInt(argv[1]);
-	int samplemax = strToInt(argv[2]); 
-	int sampledelta = strToInt(argv[3]); 
-	int normalmin = strToInt(argv[4]);
-	int normalmax = strToInt(argv[5]); 
-	int normaldelta = strToInt(argv[6]);  
-	newLoopOverFiles(samplemin, samplemax, sampledelta, normalmin, normalmax, normaldelta); 
+	double samplemin = strToDbl(argv[1]);
+	double samplemax = strToDbl(argv[2]); 
+	double sampledelta = strToDbl(argv[3]); 
+	double normalmin = strToDbl(argv[4]);
+	double normalmax = strToDbl(argv[5]); 
+	double normaldelta = strToDbl(argv[6]); 
+        bool actualRun = strToBool(argv[7]);  
+	newLoopOverFiles(samplemin, samplemax, sampledelta, normalmin, normalmax, normaldelta, actualRun); 
 	return 0; 
 }

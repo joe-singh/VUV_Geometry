@@ -1,7 +1,7 @@
 /glg4debug/glg4param omit_muon_processes  1.0
 /glg4debug/glg4param omit_hadronic_processes  1.0
 
-/rat/db/set DETECTOR geo_file "./VUV_85.0_90.0_.geo"
+/rat/db/set DETECTOR geo_file "/data/snoplus/home/joesingh/VUV/VUV_Geometry/macros/check/VUV_45.0_90.0_.geo"
 
 /run/initialize
 # This makes a picture of the full MiniCLEAN detector, including water
@@ -21,8 +21,9 @@
 
 #/vis/rayTracer/eyePosition 125.0 450.0 0.0 mm # High overview
 #/vis/rayTracer/eyePosition 250.0 23.6087510924 0.0 mm # Looking down beam
-/vis/rayTracer/eyePosition 1500.0 -100.0 0.0 mm # Top View
+/vis/rayTracer/eyePosition 1500.0 -2.0 0.0 mm # Top View
 #/vis/rayTracer/eyePosition 0.0 0.0 -1500.0 mm # Side View
+#/vis/rayTracer/eyePosition 0.0 -1500.0 0.0 mm # Back View
 
 
 # For some reason 270 is upright?

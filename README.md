@@ -6,7 +6,11 @@ This repo is used to run simulations of the VUV apparatus for both the 400 nm mi
 measurements. Just like the actual setup, the simulation geometry has a sample and PMT that rotates. Shell scripts are 
 also available to automate the process. An analysis script creates a plot of the photon distribution as a function of 
 PMT angle. There is also a script to overlay data and MC plots, which has only currently been used for the mirror but can be 
-extended to the TPB later.
+extended to the TPB later. The TLDR instructions are
+
+1. Adjust geometry in geoGenMain.py if needed. 
+2. Adjust systematic/photon flags in cluster_zero_sweep.sh. Set appropriate angle limits and run. This creates MC.
+3. Use compile_loop_macro.sh with appropriate sample/pmt angle limits to create photon distributions.
 
 ## To Do
 1. Make sure file paths in geoGenMain.py, makePhotonMacro.py, cluster_zero_sweep.sh, and newLoopOverFiles.cc are changed.
@@ -54,6 +58,9 @@ NOTE: This file has the range of sample angles and pmt angles hardcoded into it 
 but the increment in PMT angle is always +1 (there is no increment on the sample angle since it loops over an array which has
 all the angles in it already). 
 
+Also note that this script gives arguments in lines 38 and 39 to the previous two files. Remember to change these arguments
+if necessary.
+
 output: .root MC files in the directory specified on line 10. NOTE this directory is hardcoded into line 41 which actually 
 determines where the output files go. The actual structure is directory/angle_x/\*.root where x is the sample angle. 
 
@@ -78,8 +85,11 @@ NOTE: The location where to look for the MC files is hardcoded into the script a
 output: a root file (name hardcoded on line 174) which contains the angular distributions. 
 
 
+In addition to these, there are also some files to overlay plots, including data and MC. TPBsystematics.cc currently is set
+up to overlay TPB plots from MC but can be very easily changed to do data-MC mirror comparisons due to all the helper methods 
+(i.e. readDataFile which will read .txt files containing the measurements from data).
 
-geoShapes.py is the class made by Chris that contains all the shape information about Tubes and Boxes, as well as
-borders between shapes. OPTICS.ratdb is the file containing all the material information. 
+For visualisation, you can use raytrace.mac. On line 4 you must put the correct .geo file which is to be rendered, and 
+lines 24/25/26 offer top/side/back views of the apparatus. Only one can be selected (uncommented) at a time. To run
+do $ rat raytrace.mac. The output can be viewed by doing eog VUV_test1.jpg.
 
-raytrace.mac is the file used to visualise (rat raytrace.mac)

@@ -36,13 +36,10 @@ output: .geo file used by RAT.
 
 $ makePhotonMacro.py sample_angle pmt_angle wavelength n_photon filepath
 
-sample_angle and pmt_angle - same as for geoGenMain.py
-
-wavelength - wavelength of photons in nm 
-
-n_photon - number of photons in simulation, recommended 10000 for mirror and 1000000 for TPB
-
-filepath - destination of output .mac files, stored in ./macros/filepath
+* sample_angle and pmt_angle - same as for geoGenMain.py
+* wavelength - wavelength of photons in nm 
+* n_photon - number of photons in simulation, recommended 10000 for mirror and 1000000 for TPB
+* filepath - destination of output .mac files, stored in ./macros/filepath
 
 output: .mac file to run RAT simulation. needs .geo file corresponding to sample_angle, pmt_angle.
 
@@ -70,11 +67,11 @@ NOTE: This file also has hardcoded parameters. Line 3 is of the form:
 
 srun ./newLoopOverFiles.exe sample_start sample_finish sample_step pmt_start pmt_finish pmt_step false  #$@ >/dev/null 2>&1 &
 
-sample_start/sample_finish indicate the first and last sample angles for which MC files exist. sample_step is the increment 
-size with which the analysis should loop over the MC. 
+* sample_start/sample_finish indicate the first and last sample angles for which MC files exist. sample_step is the increment 
+  size with which the analysis should loop over the MC. 
 
-pmt_start/pmt_finish indicate the first and last pmt angles for which MC files exist for the given range of sample angles.
-pmt_step is the increment size with which the analysis should loop over these MC files. 
+* pmt_start/pmt_finish indicate the first and last pmt angles for which MC files exist for the given range of sample angles.
+  pmt_step is the increment size with which the analysis should loop over these MC files. 
 
 NOTE: The location where to look for the MC files is hardcoded into the script at line 221. 
 
